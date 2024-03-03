@@ -17,6 +17,8 @@ isDebug = True if sys.gettrace() else False
 
 # 干掉AA的一个trick操作：https://github.com/marian42/mesh_to_sdf/blob/66036a747e82e7129f6afc74c5325d676a322114/mesh_to_sdf/pyrender_wrapper.py#L20
 
+# 自定义shader的实验：https://github.com/mmatl/pyrender/issues/39
+
 class TriScene():
     def __init__(self):
         self.scene = pyrender.Scene(ambient_light = [1., 1., 1.])
@@ -38,9 +40,9 @@ class TriScene():
             return
 
         if self.mesh is not None:
-            self.mesh = self.mesh.from_trimesh( fuze_trimesh, material=self.mat  )
+            self.mesh = self.mesh.from_trimesh( fuze_trimesh, material=self.mat, smooth=False )
         else:
-            self.mesh = pyrender.Mesh.from_trimesh(fuze_trimesh, material=self.mat  )
+            self.mesh = pyrender.Mesh.from_trimesh(fuze_trimesh, material=self.mat , smooth=False )
         if self.mesh not in self.scene.meshes:
             self.scene.add(self.mesh)
 
@@ -65,8 +67,9 @@ class PYRender():
                                        point_size=1.0)
 
     def render(self, scene: pyrender.Scene):
-        color, depth = self.r.render(scene, flags=pyrender.constants.RenderFlags.OFFSCREEN)
-        return color, depth
+        color, depth = self.r.render(scene, flags=pyrender.constants.RenderFlags.OFFSCREEN | pyrender.constants.RenderFlags.FACE_NORMALS)
+        # rgb_normals_data, _ = self.r._renderer._read_main_framebuffer(scene, flags=pyrender.constants.RenderFlags.FACE_NORMALS)                                                      
+        return color, depth #, rgb_normals_data
 
     def destroy(self):
         self.r.delete()
