@@ -29,6 +29,7 @@ class TriScene():
         self.id = str(uuid.uuid1())
         self.mat = None
         self.mesh = None
+        self.cameraNode = None
 
     def addMesh(self, path = None, vertices = None, faces = None):
         if self.mat is None:
@@ -57,15 +58,15 @@ class TriScene():
     def addCamera(self, yaw = 0, pitch = 0, roll = 0, x =0,y=0,z=0):
 
         def deg2rad(x):
-            return x*math.pi/180.0
-        camera = pyrender.PerspectiveCamera(yfov=np.pi / 2, aspectRatio=1.0)
+            return x * math.pi / 180.0
+
         ## camera forward: world -z
         ## camera up: world +y
         ## camera right: world +x
         # rotmat = trimesh.transformations.euler_matrix( deg2rad(pitch), deg2rad(yaw), deg2rad(roll), 'sxyz')
 
         ## 这边的顺序，是world 的XYZ轴的顺序
-        rotmat = trimesh.transformations.euler_matrix( deg2rad(roll), deg2rad(pitch), deg2rad(yaw), 'sxzy')
+        rotmat = trimesh.transformations.euler_matrix( deg2rad(roll), deg2rad(pitch), deg2rad(yaw), 'sxyz')
         camera_pose = np.eye(4)
         camera_pose[:3, :3] = rotmat[:3,:3]
         camera_pose[:3, 3] = [x,y,z]
@@ -73,7 +74,12 @@ class TriScene():
         logger.info("================================")
         logger.info(f'{yaw}_{pitch}_{roll}')
         logger.info(rotmat)
-        self.scene.add(camera, pose=camera_pose)
+
+        if self.cameraNode is None:
+            camera = pyrender.PerspectiveCamera(yfov=np.pi / 2, aspectRatio=1.0)
+            self.cameraNode = self.scene.add( camera, pose=camera_pose)
+        else:
+            self.cameraNode.matrix = camera_pose
 
 class PYRender():
     def __init__(self):
@@ -144,9 +150,11 @@ if __name__ == '__main__':
     x = 0
     y = 0
     z = 0
-    yaw = 30 # pitch
-    pitch = 20 # -roll
-    roll = 10 # 270 - yaw_ue
+    ##TODO: 说实话，pyrender yaw、pitch的旋转和ue一摸一样，我也可以明确，就是按照xyz顺序跑的
+    ## 但是，最后这个roll的旋转，根本就不是按照旋转之后的轴计算的。所以不对！！！
+    yaws = [0, 20, 30, 45, 60, 90, 120, 150 , 180] # roll
+    pitchs = [ 0] #, 45, 90, 135, 180, 225] # yaw
+    rolls = [30] # pitch
 
     # yaw,pitch,roll = ue2render(yaw, pitch, roll)
 
@@ -155,26 +163,28 @@ if __name__ == '__main__':
     s1 = TriScene()
     meshlab1 = LoadMeshFromPyMeshLab()
     # s1.addMesh(path=os.path.join(r"D:\assets\ico.obj"))
-    meshlab1.loadMesh(os.path.join(r"D:\data\axes.fbx"))
+    meshlab1.loadMesh(os.path.join(r"D:\assets\axes.fbx"))
     s1.addMesh(vertices=meshlab1.mesh.vertex_matrix(), faces=meshlab1.mesh.face_matrix() )
-    s1.addCamera(yaw=yaw, pitch=pitch, roll=roll, x= x,y=y,z=z)
- 
-    # 下面的渲染配置可能是正确的
-    for j in range(1):
-        start_time = time.time()
-        for i in [s1]:
-            color, depth = rr.render(i.scene)
 
-            duration = ( time.time() - start_time ) / 1
-            logger.info(f'Duration = {duration}')
+    for yaw in yaws:
+        for pitch in pitchs:
+            for roll in rolls:
+                s1.addCamera(yaw=yaw, pitch=pitch, roll=roll, x= x,y=y,z=z)
 
-            im = Image.fromarray(color)
-            # im.save(f"pyrender_color_{j}_{i.id[:6]}.png")
-            im.save(f"fromue_pyrender_color_{yaw}_{pitch}_{roll}_{x}_{y}_{z}.png")
-        # # do
-        # meshlab1.Dec()
-        # s1.addMesh(vertices=meshlab1.mesh.vertex_matrix(), faces=meshlab1.mesh.face_matrix() )
-        # if isDebug:
-        #     print(meshlab1.mesh.vertex_matrix().shape[0])
+                start_time = time.time()
+                for i in [s1]:
+                    color, depth = rr.render(i.scene)
+
+                    duration = ( time.time() - start_time ) / 1
+                    logger.info(f'Duration = {duration}')
+
+                    im = Image.fromarray(color)
+                    # im.save(f"pyrender_color_{j}_{i.id[:6]}.png")
+                    im.save(f"{yaw}_{pitch}_{roll}_{x}_{y}_{z}.jpg")
+                # # do
+                # meshlab1.Dec()
+                # s1.addMesh(vertices=meshlab1.mesh.vertex_matrix(), faces=meshlab1.mesh.face_matrix() )
+                # if isDebug:
+                #     print(meshlab1.mesh.vertex_matrix().shape[0])
 
     rr.destroy()
