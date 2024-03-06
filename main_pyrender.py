@@ -10,6 +10,9 @@ import pymeshlab
 import pyrender
 import trimesh
 from PIL import Image
+import math
+
+np.set_printoptions(suppress = True)
 
 isDebug = True if sys.gettrace() else False
 
@@ -50,20 +53,32 @@ class TriScene():
     def addMat(self):
         self.mat = pyrender.MetallicRoughnessMaterial()
         self.mat.baseColorFactor = [0., 1., 1., 1.]
+ 
+    def addCamera(self, yaw = 0, pitch = 0, roll = 0, x =0,y=0,z=0):
 
-    def addCamera(self):
-        camera = pyrender.PerspectiveCamera(yfov=np.pi / 3.0, aspectRatio=1.0)
-        camera_pose = np.array([[1.0, 0,    0.0,   0],
-                                [0.0,  -1.0, 0.0, 0],
-                                [0.0,  0.0,   -1,   -10],
-                                [0.0,  0.0, 0.0, 1.0]])
-        # TODO: pyrender的opengl坐标系，和blender坐标系的映射，一定有现成的
+        def deg2rad(x):
+            return x*math.pi/180.0
+        camera = pyrender.PerspectiveCamera(yfov=np.pi / 2, aspectRatio=1.0)
+        ## camera forward: world -z
+        ## camera up: world +y
+        ## camera right: world +x
+        # rotmat = trimesh.transformations.euler_matrix( deg2rad(pitch), deg2rad(yaw), deg2rad(roll), 'sxyz')
+
+        ## 这边的顺序，是world 的XYZ轴的顺序
+        rotmat = trimesh.transformations.euler_matrix( deg2rad(roll), deg2rad(pitch), deg2rad(yaw), 'sxzy')
+        camera_pose = np.eye(4)
+        camera_pose[:3, :3] = rotmat[:3,:3]
+        camera_pose[:3, 3] = [x,y,z]
+
+        logger.info("================================")
+        logger.info(f'{yaw}_{pitch}_{roll}')
+        logger.info(rotmat)
         self.scene.add(camera, pose=camera_pose)
 
 class PYRender():
     def __init__(self):
-        self.r = pyrender.OffscreenRenderer(viewport_width=640,
-                                       viewport_height=480,
+        self.r = pyrender.OffscreenRenderer(viewport_width=512,
+                                       viewport_height=512,
                                        point_size=1.0)
 
     def render(self, scene: pyrender.Scene):
@@ -107,29 +122,45 @@ class LoadMeshFromPyMeshLab():
             autoclean=False, selected=False
         )
 
+def ue2render(yaw, pitch, roll):
+
+    return yaw-90, pitch, -roll
+
 if __name__ == '__main__':
+
+    # # # Camera coordinate definition -- Following the CV convention, x-right, y-down, z-forward.
+
+    # meshlab1 = LoadMeshFromPyMeshLab()
+    # s1 = TriScene()
+    # meshlab1.loadMesh(os.path.join(r"D:\data\axes.fbx"))
+    # s1.addMesh(vertices=meshlab1.mesh.vertex_matrix(), faces=meshlab1.mesh.face_matrix() )
+    # pyrender.Viewer(s1.scene, use_raymond_lighting=True)
+    
+    
     ut.initLog()
 
     logger.info("================================")
+
+    x = 0
+    y = 0
+    z = 0
+    yaw = 30 # pitch
+    pitch = 20 # -roll
+    roll = 10 # 270 - yaw_ue
+
+    # yaw,pitch,roll = ue2render(yaw, pitch, roll)
 
     rr = PYRender()
 
     s1 = TriScene()
     meshlab1 = LoadMeshFromPyMeshLab()
     # s1.addMesh(path=os.path.join(r"D:\assets\ico.obj"))
-    meshlab1.loadMesh(os.path.join(r"D:\assets\suzanne.obj"))
+    meshlab1.loadMesh(os.path.join(r"D:\data\axes.fbx"))
     s1.addMesh(vertices=meshlab1.mesh.vertex_matrix(), faces=meshlab1.mesh.face_matrix() )
-    s1.addCamera()
-
-    s2 = TriScene()
-    meshlab2 = LoadMeshFromPyMeshLab()
-    # s2.addMesh(path=os.path.join(r"D:\assets\ico.obj"))
-    meshlab2.loadMesh(os.path.join(r"D:\assets\ico.obj"))
-    s2.addMesh(vertices=meshlab2.mesh.vertex_matrix(), faces=meshlab2.mesh.face_matrix() )
-    s2.addCamera()
-
+    s1.addCamera(yaw=yaw, pitch=pitch, roll=roll, x= x,y=y,z=z)
+ 
     # 下面的渲染配置可能是正确的
-    for j in range(5):
+    for j in range(1):
         start_time = time.time()
         for i in [s1]:
             color, depth = rr.render(i.scene)
@@ -138,11 +169,12 @@ if __name__ == '__main__':
             logger.info(f'Duration = {duration}')
 
             im = Image.fromarray(color)
-            im.save(f"pyrender_color_{j}_{i.id[:6]}.png")
-        # do
-        meshlab1.Dec()
-        s1.addMesh(vertices=meshlab1.mesh.vertex_matrix(), faces=meshlab1.mesh.face_matrix() )
-        if isDebug:
-            print(meshlab1.mesh.vertex_matrix().shape[0])
+            # im.save(f"pyrender_color_{j}_{i.id[:6]}.png")
+            im.save(f"fromue_pyrender_color_{yaw}_{pitch}_{roll}_{x}_{y}_{z}.png")
+        # # do
+        # meshlab1.Dec()
+        # s1.addMesh(vertices=meshlab1.mesh.vertex_matrix(), faces=meshlab1.mesh.face_matrix() )
+        # if isDebug:
+        #     print(meshlab1.mesh.vertex_matrix().shape[0])
 
     rr.destroy()
