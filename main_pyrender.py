@@ -59,9 +59,41 @@ class TriScene():
 
         def deg2rad(x):
             return x * math.pi / 180.0
+        
+        def ueypr2opengl(yaw, pitch,roll):
+            return 270 - yaw, pitch, -roll
+        def ueloc2opengl(x,y,z):
+            return x, z, y
+        
+        yaw, pitch, roll = ueypr2opengl(yaw, pitch, roll)
+        x,y,z = ueloc2opengl(x,y,z)
 
         ## 这边指定的szxy的顺序，是world 的坐标轴的顺序
         rotmat = trimesh.transformations.euler_matrix( deg2rad(roll), deg2rad(pitch), deg2rad(yaw), 'szxy')
+        '''
+        终于清楚了，在做yaw、pitch、roll的旋转映射时，可以根据目标坐标系的ypr的计算顺序、坐标轴向顺序，得到相对相机主方向各个轴的旋转顺序。
+
+        UE: 镜头看向X, 右侧是Y轴, 垂直向上是Z轴. 计算顺序是下图123:yaw、pitch、roll
+        ^ yaw(1)  Z 
+        |  
+        |
+        |------> roll(3)  X 
+        \
+         \
+          v  pitch(2)  Y
+
+        pyrender: 镜头看向 -Z, 右侧是X轴, 垂直向上是Y轴.
+        ^ Y
+        |  
+        |
+        |------> X 
+        \
+         \
+          v  Z
+        
+        要做ue转pyrender(opengl), 首先我们确定旋转计算顺序。相对镜头的主方向而言, 在pyrender中, 先计算Y, 再计算X,在计算Z. 所以对于pyrender, 轴向为 'sxzy'
+
+        '''
         camera_pose = np.eye(4)
         camera_pose[:3, :3] = rotmat[:3,:3]
         camera_pose[:3, 3] = [x,y,z]
@@ -145,17 +177,13 @@ if __name__ == '__main__':
 
     logger.info("================================")
 
-    x = 0
-    y = 0
-    z = 0
-    ## 说实话，pyrender yaw、pitch的旋转和ue一摸一样，我也可以明确，就是按照xyz顺序跑的
-    # 果然，pitch设置90，roll旋转时，发现时按照旋转之前的轴进行转的，而不是旋转后的轴
-    # 由此说明，目前假设的旋转顺序不对！！！！
-    yaws = [ 270-329.59] # yaw = 270 - yaw_ue
-    pitchs = [ 131.5] # pitch = pitch_ue
-    rolls = [ -154.8] # roll = -roll_ue
-
-    # yaw,pitch,roll = ue2render(yaw, pitch, roll)
+    ## 这边输入都是ue坐标系了
+    x = 100
+    y = 45
+    z = 10
+    yaws = [30]
+    pitchs = [40]
+    rolls = [80]
 
     rr = PYRender()
 
