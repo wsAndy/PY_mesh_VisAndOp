@@ -60,13 +60,8 @@ class TriScene():
         def deg2rad(x):
             return x * math.pi / 180.0
 
-        ## camera forward: world -z
-        ## camera up: world +y
-        ## camera right: world +x
-        # rotmat = trimesh.transformations.euler_matrix( deg2rad(pitch), deg2rad(yaw), deg2rad(roll), 'sxyz')
-
-        ## 这边的顺序，是world 的XYZ轴的顺序
-        rotmat = trimesh.transformations.euler_matrix( deg2rad(roll), deg2rad(pitch), deg2rad(yaw), 'sxyz')
+        ## 这边指定的szxy的顺序，是world 的坐标轴的顺序
+        rotmat = trimesh.transformations.euler_matrix( deg2rad(roll), deg2rad(pitch), deg2rad(yaw), 'szxy')
         camera_pose = np.eye(4)
         camera_pose[:3, :3] = rotmat[:3,:3]
         camera_pose[:3, 3] = [x,y,z]
@@ -80,6 +75,9 @@ class TriScene():
             self.cameraNode = self.scene.add( camera, pose=camera_pose)
         else:
             self.cameraNode.matrix = camera_pose
+
+    # def fromUEYPR2PyrenderPose(self, yaw = 0, pitch = 0, roll = 0):
+
 
 class PYRender():
     def __init__(self):
@@ -150,11 +148,12 @@ if __name__ == '__main__':
     x = 0
     y = 0
     z = 0
-    ##TODO: 说实话，pyrender yaw、pitch的旋转和ue一摸一样，我也可以明确，就是按照xyz顺序跑的
-    ## 但是，最后这个roll的旋转，根本就不是按照旋转之后的轴计算的。所以不对！！！
-    yaws = [0, 20, 30, 45, 60, 90, 120, 150 , 180] # roll
-    pitchs = [ 0] #, 45, 90, 135, 180, 225] # yaw
-    rolls = [30] # pitch
+    ## 说实话，pyrender yaw、pitch的旋转和ue一摸一样，我也可以明确，就是按照xyz顺序跑的
+    # 果然，pitch设置90，roll旋转时，发现时按照旋转之前的轴进行转的，而不是旋转后的轴
+    # 由此说明，目前假设的旋转顺序不对！！！！
+    yaws = [ 270-329.59] # yaw = 270 - yaw_ue
+    pitchs = [ 131.5] # pitch = pitch_ue
+    rolls = [ -154.8] # roll = -roll_ue
 
     # yaw,pitch,roll = ue2render(yaw, pitch, roll)
 
@@ -163,7 +162,7 @@ if __name__ == '__main__':
     s1 = TriScene()
     meshlab1 = LoadMeshFromPyMeshLab()
     # s1.addMesh(path=os.path.join(r"D:\assets\ico.obj"))
-    meshlab1.loadMesh(os.path.join(r"D:\assets\axes.fbx"))
+    meshlab1.loadMesh(os.path.join(r"D:\data\axes.fbx"))
     s1.addMesh(vertices=meshlab1.mesh.vertex_matrix(), faces=meshlab1.mesh.face_matrix() )
 
     for yaw in yaws:
