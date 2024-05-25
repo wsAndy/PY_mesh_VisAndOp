@@ -29,11 +29,19 @@ class TriScene():
         self.id = str(uuid.uuid1())
         self.mat = None
         self.mesh = None
+        self.meshNode = None
+        self.camera = None
         self.cameraNode = None
 
-    def addMesh(self, path = None, vertices = None, faces = None):
+    def replaceMesh(self, path = None, vertices = None, faces = None):
+        # 添加顶点坐标时，外部是pymeshlab的坐标系
+        # UE：      x, y, z
+        # meshlab:  x, z, y
         if self.mat is None:
             self.addMat()
+
+        if self.meshNode != None:
+            self.scene.remove_node(self.meshNode)
 
         if path is not None:
             fuze_trimesh = trimesh.load(path)
@@ -47,26 +55,32 @@ class TriScene():
             self.mesh = self.mesh.from_trimesh( fuze_trimesh, material=self.mat, smooth=False )
         else:
             self.mesh = pyrender.Mesh.from_trimesh(fuze_trimesh, material=self.mat , smooth=False )
-        if self.mesh not in self.scene.meshes:
-            self.scene.add(self.mesh)
+
+        # 由于每次都会创建新的trimesh，所以下面代码每次都被执行了
+        self.meshNode = self.scene.add(self.mesh)
 
 
     def addMat(self):
         self.mat = pyrender.MetallicRoughnessMaterial()
-        self.mat.baseColorFactor = [0., 1., 1., 1.]
+        self.mat.baseColorFactor = [1., 1., 1., 1.]
+
+
+    def deg2rad(self,x):
+        return x * math.pi / 180.0
+    
+    def ueypr2opengl(self,yaw, pitch,roll):
+        return 270 - yaw, pitch, -roll
+    def ueloc2opengl(self,x,y,z):
+        return x, z, y 
+
  
     def addCamera(self, yaw = 0, pitch = 0, roll = 0, x =0,y=0,z=0):
 
         def deg2rad(x):
             return x * math.pi / 180.0
         
-        def ueypr2opengl(yaw, pitch,roll):
-            return 270 - yaw, pitch, -roll
-        def ueloc2opengl(x,y,z):
-            return x, z, y
-        
-        yaw, pitch, roll = ueypr2opengl(yaw, pitch, roll)
-        x,y,z = ueloc2opengl(x,y,z)
+        yaw, pitch, roll = self.ueypr2opengl(yaw, pitch, roll)
+        x,y,z = self.ueloc2opengl(x,y,z)
 
         ## 这边指定的szxy的顺序，是world 的坐标轴的顺序
         rotmat = trimesh.transformations.euler_matrix( deg2rad(roll), deg2rad(pitch), deg2rad(yaw), 'szxy')
@@ -181,7 +195,7 @@ if __name__ == '__main__':
     x = 100
     y = 45
     z = 10
-    yaws = [30]
+    yaws = [30,  32]
     pitchs = [40]
     rolls = [80]
 
@@ -193,6 +207,7 @@ if __name__ == '__main__':
     meshlab1.loadMesh(os.path.join(r"D:\data\axes.fbx"))
     s1.addMesh(vertices=meshlab1.mesh.vertex_matrix(), faces=meshlab1.mesh.face_matrix() )
 
+    colors = []
     for yaw in yaws:
         for pitch in pitchs:
             for roll in rolls:
@@ -202,16 +217,24 @@ if __name__ == '__main__':
                 for i in [s1]:
                     color, depth = rr.render(i.scene)
 
+                    colors.append(color)
+
                     duration = ( time.time() - start_time ) / 1
                     logger.info(f'Duration = {duration}')
 
                     im = Image.fromarray(color)
-                    # im.save(f"pyrender_color_{j}_{i.id[:6]}.png")
-                    im.save(f"{yaw}_{pitch}_{roll}_{x}_{y}_{z}.jpg")
+                    # im.save(f"{yaw}_{pitch}_{roll}_{x}_{y}_{z}.jpg")
                 # # do
                 # meshlab1.Dec()
                 # s1.addMesh(vertices=meshlab1.mesh.vertex_matrix(), faces=meshlab1.mesh.face_matrix() )
                 # if isDebug:
                 #     print(meshlab1.mesh.vertex_matrix().shape[0])
+
+    diffRegion = np.logical_xor( colors[0][:,:,0], colors[1][:,:,0] )
+    allRegion = np.logical_or( colors[0][:,:,0], colors[1][:,:,0] )
+    print(np.sum(diffRegion))
+    print(np.sum(allRegion))
+    res = np.sum(diffRegion)/np.sum(allRegion)
+    print(res)
 
     rr.destroy()
