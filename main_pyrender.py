@@ -91,7 +91,7 @@ class TriScene():
          \
           v  Z
         
-        要做ue转pyrender(opengl), 首先我们确定旋转计算顺序。相对镜头的主方向而言, 在pyrender中, 先计算Y, 再计算X,在计算Z. 所以对于pyrender, 轴向为 'sxzy'
+        要做ue转pyrender(opengl), 首先我们确定旋转计算顺序。相对镜头的主方向而言, 在pyrender中, 先计算Y, 再计算X,在计算Z. 所以对于pyrender, 轴向为 'szxy'
 
         '''
         camera_pose = np.eye(4)
