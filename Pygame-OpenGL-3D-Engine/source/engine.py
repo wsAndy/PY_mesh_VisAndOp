@@ -46,11 +46,6 @@ class Engine:
         # Create a clock to limit the framerate
         self.clock = pygame.time.Clock()
 
-        # Create a camera
-        # self.camera = Camera(self)
-
-        # self.set_scene()
-
     def set_camera(self, camera: Any):
         self.camera = camera
 
@@ -70,7 +65,8 @@ class Engine:
 
     def render(self):
         # Clear the framebuffer
-        self.ctx.clear(0.08, 0.16, 0.16)
+        # self.ctx.clear(0.08, 0.16, 0.16)
+        self.ctx.clear(0, 0, 0)
 
         # Render the scene
         self.scene.render()
