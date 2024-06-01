@@ -6,8 +6,8 @@ from source.engine import Engine
 
 FOV = 45.0
 NEAR = 0.1
-FAR = 100.0
-SPEED = 0.01
+FAR = 10000.0
+SPEED = 1 #0.01
 SENSITIVITY = 0.05
 
 
@@ -50,6 +50,15 @@ class FreeCamera:
         # Projection Matrix
         self.projection_matrix = self.get_projection_matrix()
 
+    def fromUE( self, location, rotation ):
+        pass
+    def toUE( self, location, rotation ):
+        pass
+    def fromBlender( self, location, rotation ):
+        pass
+    def toBlender( self, location, rotation ):
+        pass
+
     def get_projection_matrix(self):
         return glm.perspective(glm.radians(FOV), self.aspect_ratio, NEAR, FAR)
 
@@ -71,6 +80,17 @@ class FreeCamera:
             self.position += self.up * velocity
 
     def rotate(self):
+        leftPick, midPick, rightPick =pygame.mouse.get_pressed()
+        '''
+        1 - left click
+        2 - middle click
+        3 - right click
+        4 - scroll up
+        5 - scroll down
+        '''
+        if rightPick != True:
+            return
+        
         mouse_x, mouse_y = pygame.mouse.get_rel()
         mouse_x *= SENSITIVITY
         mouse_y *= SENSITIVITY

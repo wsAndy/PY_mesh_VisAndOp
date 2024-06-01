@@ -192,3 +192,114 @@ class Cube:
             vertex_shader=vertex_code,
             fragment_shader=fragment_code,
         )
+
+
+from source.loader import ModelLoader
+
+class CustomMesh:
+    def __init__(self, app: Engine):
+        self.modelLoader = ModelLoader()
+        self.app = app
+        self.ctx = self.app.ctx
+        self.camera = self.app.camera
+        self.shader_program = self.get_shader_program(
+            "default.vert", "default.frag"
+        )
+        self.STATE=0
+        # Load texture
+        self.texture = self.get_texture("assets/textures/test.png")
+
+        # initialize
+        self.pos_vbo = None
+        self.coords_vbo = None
+        self.vao = None
+        self.ibo = None
+
+        # Set texture
+        self.shader_program['texture_0'] = 0
+        self.texture.use()
+
+        self.shader_program['projection_matrix'].write(
+            self.camera.projection_matrix
+        )
+        self.shader_program['view_matrix'].write(
+            self.camera.view_matrix
+        )
+
+        self.model_matrix = self.get_model_matrix()
+        self.shader_program['model_matrix'].write(
+            self.model_matrix
+        )
+
+    def loadModel(self, path):
+        self.STATE=0
+        if self.pos_vbo:
+            self.pos_vbo.release()
+        if self.coords_vbo:
+            self.coords_vbo.release()
+        if self.ibo:
+            self.ibo.release()
+
+        self.loadedMesh = self.modelLoader.load(path)
+        self.pos_vbo = self.ctx.buffer( self.loadedMesh['vertices'].astype('f4').tobytes() )
+        self.coords_vbo = self.ctx.buffer( self.loadedMesh['uv'].astype('f4').tobytes() )
+        self.ibo =self.ctx.buffer( self.loadedMesh['faces'].tobytes() )
+
+        self.vao = self.ctx.vertex_array(
+            program = self.shader_program,
+            content= [
+                (self.coords_vbo, '2f', 'in_text_coord_0' ),
+                (self.pos_vbo, '3f', 'in_position'),
+            ],
+            index_buffer = self.ibo
+        )
+        self.STATE=1
+
+
+    def get_texture(self, path: str):
+        texture = pygame.image.load(path).convert()
+        texture = pygame.transform.flip(texture, False, True)
+        texture_data = pygame.image.tostring(texture, "RGB")
+        return self.ctx.texture(texture.get_size(), 3, texture_data)
+
+    def get_model_matrix(self):
+        return glm.mat4()
+
+    def update(self):
+        model_matrix = glm.rotate(
+            self.model_matrix, self.app.time * 0.5, glm.vec3(0.0, 1.0, 0.0)
+        )
+        self.shader_program['model_matrix'].write(model_matrix)
+
+        self.shader_program['view_matrix'].write(
+            self.camera.view_matrix
+        ) 
+
+    def render(self):
+        if self.STATE != 0:
+            self.update()
+            self.vao.render()
+
+    def destroy(self):
+        if self.pos_vbo:
+            self.pos_vbo.release()
+        if self.coords_vbo:
+            self.coords_vbo.release()
+        if self.ibo:
+            self.ibo.release()
+        self.shader_program.release()
+        if self.vao:
+            self.vao.release()
+
+    def get_shader_program(self, vertex_shader: str, fragment_shader: str):
+        with open(f"source/shaders/{vertex_shader}") as f:
+            vertex_code = f.read()
+
+        with open(f"source/shaders/{fragment_shader}") as f:
+            fragment_code = f.read()
+
+        return self.ctx.program(
+            vertex_shader=vertex_code,
+            fragment_shader=fragment_code,
+        )
+     

@@ -32,12 +32,13 @@ class Engine:
 
         # Mouse settings
         pygame.event.set_grab(True)
-        pygame.mouse.set_visible(False)
+        # 隐藏鼠标
+        # pygame.mouse.set_visible(False)
 
         # Create ModernGL Context
         self.ctx = moderngl.create_context()
         # Set the front face to clockwise
-        self.ctx.front_face = 'cw'
+        # self.ctx.front_face = 'cw'
         # Enable depth test and face culling
         self.ctx.enable(moderngl.DEPTH_TEST | moderngl.CULL_FACE)
 
