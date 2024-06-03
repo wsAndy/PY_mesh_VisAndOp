@@ -1,6 +1,8 @@
 import json
 from typing import Any
 
+from .scene import Scene
+
 import moderngl
 import pygame
 
@@ -50,7 +52,7 @@ class Engine:
     def set_camera(self, camera: Any):
         self.camera = camera
 
-    def set_scene(self, scene: Any):
+    def set_scene(self, scene: Scene):
         # Scene
         self.scene = scene
 

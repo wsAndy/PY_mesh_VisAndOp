@@ -50,6 +50,8 @@ class FreeCamera:
         # Projection Matrix
         self.projection_matrix = self.get_projection_matrix()
 
+        self.last_right_mouse = [0, 0]
+
     def fromUE( self, location, rotation ):
         pass
     def toUE( self, location, rotation ):
@@ -89,14 +91,20 @@ class FreeCamera:
         5 - scroll down
         '''
         if rightPick != True:
+            self.last_right_mouse = [0, 0]
             return
         
-        mouse_x, mouse_y = pygame.mouse.get_rel()
-        mouse_x *= SENSITIVITY
-        mouse_y *= SENSITIVITY
+        mouse_x, mouse_y = pygame.mouse.get_pos()
+        if abs(self.last_right_mouse[0]) < 1 or abs(self.last_right_mouse[1]) < 1:
+            self.last_right_mouse = [mouse_x, mouse_y]
+            return
+        current_x = (mouse_x - self.last_right_mouse[0] ) * SENSITIVITY
+        current_y = (mouse_y - self.last_right_mouse[1] ) * SENSITIVITY
 
-        self.yaw += mouse_x
-        self.pitch -= mouse_y
+        self.last_right_mouse = [mouse_x, mouse_y]
+
+        self.yaw += current_x
+        self.pitch -= current_y
 
         if self.pitch > 89.9:
             self.pitch = 89.9

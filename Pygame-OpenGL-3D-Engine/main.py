@@ -2,6 +2,7 @@ from source.freecamera import FreeCamera
 from source.engine import Engine
 from source.model import Cube
 from source.model import CustomMesh
+from source.scene import Scene
 import os
 
 if __name__ == "__main__":
@@ -10,6 +11,13 @@ if __name__ == "__main__":
 
     model = CustomMesh(engine)
     model.loadModel( os.path.join(r"C:\Users\admin\Documents\plane.fbx") )
-    # model = Cube(engine)
-    engine.set_scene(model)
+
+    model2 = CustomMesh(engine)
+    model2.loadModel( os.path.join(r"C:\Users\admin\Documents\axes.fbx") )
+
+    scene = Scene()
+    scene.add_model(model)
+    scene.add_model(model2)
+    
+    engine.set_scene(scene)
     engine.run()
