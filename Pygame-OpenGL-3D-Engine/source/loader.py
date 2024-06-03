@@ -15,9 +15,11 @@ class ModelLoader():
         self.meshSet.clear()
         self.meshSet.load_new_mesh(path)
         # self.meshSet.get_geometric_measures()
+        self.meshSet.compute_texcoord_transfer_wedge_to_vertex()
         highMesh = self.meshSet.current_mesh()
+        highMesh.compact()
         # (faceNum*3, 2), 记录每一个三角形中每一个顶点的uv
-        return { "vertices":highMesh.vertex_matrix(), "faces":highMesh.face_matrix(), "uv": highMesh.wedge_tex_coord_matrix()   }
+        return { "vertices":highMesh.vertex_matrix(), "faces":highMesh.face_matrix(), "uv": highMesh.vertex_tex_coord_matrix()   }
 
     def load2trimesh(self, path):
         res = self.load(path)

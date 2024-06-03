@@ -77,7 +77,7 @@ class Engine:
 
     def run(self):
         # Print OpenGL Version
-        print(json.dumps(self.ctx.info, indent=2))
+        # print(json.dumps(self.ctx.info, indent=2))
 
         while True:  
             self.get_time()
