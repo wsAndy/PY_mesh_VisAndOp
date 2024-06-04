@@ -1,7 +1,7 @@
 import glm
 import pygame
 import numpy as np
-
+from source.actor import Actor
 from source.engine import Engine
 
 FOV = 45.0
@@ -11,18 +11,55 @@ SPEED = 1 #0.01
 SENSITIVITY = 0.1
 
 
-class FreeCamera:
+class FreeCamera(Actor):
     def __init__(self, app: Engine, position=(5.0, 5.0, 5.0) ):
+        super().__init__()
         self.app = app
         self.aspect_ratio = app.WINDOW_SIZE[0] / app.WINDOW_SIZE[1]
+        # Projection Matrix
+        self.projection_matrix = self.get_projection_matrix()
+        self.last_right_mouse = [0, 0]
+
+        self.initRTS(position)
+
+    @property
+    def location(self, ):
+        return self.transformComponent.location
+    @location.setter
+    def location(self, loc):
+        self.transformComponent.location = loc
+        
+    @property
+    def yaw(self, ):
+        return self.transformComponent.yaw
+    @yaw.setter
+    def yaw(self, yaw):
+        self.transformComponent.yaw = yaw
+        
+    @property
+    def pitch(self, ):
+        return self.transformComponent.pitch
+    @pitch.setter
+    def pitch(self, pitch):
+        self.transformComponent.pitch = pitch
+
+    @property
+    def roll(self, ):
+        return self.transformComponent.roll
+    @roll.setter
+    def roll(self, roll):
+        self.transformComponent.roll = roll
+
+    def initRTS(self, position):
 
         # Camera Position
-        self.position = glm.vec3(position)
-
-
+        self.location = position
+        
         # View Matrix (eye, center, up)
         self.view_matrix = glm.lookAt(
-            self.position, glm.vec3(0.0, 0.0, 0.0), glm.vec3(0.0, 1.0, 0.0)
+            self.location, 
+            glm.vec3(0.0, 0.0, 0.0), 
+            glm.vec3(0.0, 1.0, 0.0)
         )
 
         inverted = np.array( glm.inverse(self.view_matrix).to_list())
@@ -47,10 +84,6 @@ class FreeCamera:
         self.pitch = glm.degrees(pitch)
         self.roll = glm.degrees(roll)
 
-        # Projection Matrix
-        self.projection_matrix = self.get_projection_matrix()
-
-        self.last_right_mouse = [0, 0]
 
     def fromUE( self, location, rotation ):
         pass
@@ -69,17 +102,17 @@ class FreeCamera:
         keys = pygame.key.get_pressed()
 
         if keys[pygame.K_w]:
-            self.position += self.forward * velocity
+            self.location += self.forward * velocity
         if keys[pygame.K_s]:
-            self.position -= self.forward * velocity
+            self.location -= self.forward * velocity
         if keys[pygame.K_a]:
-            self.position -= self.right * velocity
+            self.location -= self.right * velocity
         if keys[pygame.K_d]:
-            self.position += self.right * velocity
+            self.location += self.right * velocity
         if keys[pygame.K_q]:
-            self.position -= self.up * velocity
+            self.location -= self.up * velocity
         if keys[pygame.K_e]:
-            self.position += self.up * velocity
+            self.location += self.up * velocity
 
 
     def rotate(self):
@@ -116,7 +149,7 @@ class FreeCamera:
         right = glm.vec3(0,0,0)
         up = glm.vec3(0,0,0)
         # Update camera vectors
-        forward.x = -glm.cos(glm.radians(self.yaw)) * glm.cos(glm.radians(self.pitch))
+        forward.x = -glm.cos( glm.radians(self.yaw)) * glm.cos(glm.radians(self.pitch))
         forward.y = glm.sin(glm.radians(self.pitch))
         forward.z = -glm.sin(glm.radians(self.yaw)) * glm.cos(glm.radians(self.pitch))
         forward = glm.normalize(forward)
@@ -136,6 +169,8 @@ class FreeCamera:
         self.up = up
 
     def update(self):
+        super().tick()
+        
         self.move()
         self.rotate()
 
@@ -145,7 +180,7 @@ class FreeCamera:
         # print( self.up )
 
         self.view_matrix = glm.lookAt(
-            self.position, self.position + self.forward, self.up
+            self.location, self.location + self.forward, self.up
         )
 
 
