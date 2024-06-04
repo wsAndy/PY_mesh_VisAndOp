@@ -32,8 +32,8 @@ class Engine:
             self.WINDOW_SIZE, pygame.OPENGL | pygame.DOUBLEBUF
         )
 
-        # Mouse settings
-        pygame.event.set_grab(True)
+        # Mouse settings. 限制鼠标在窗口内
+        # pygame.event.set_grab(True)
         # 隐藏鼠标
         # pygame.mouse.set_visible(False)
 

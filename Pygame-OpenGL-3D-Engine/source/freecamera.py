@@ -8,7 +8,7 @@ FOV = 45.0
 NEAR = 0.1
 FAR = 10000.0
 SPEED = 1 #0.01
-SENSITIVITY = 0.05
+SENSITIVITY = 0.1
 
 
 class FreeCamera:
@@ -80,6 +80,7 @@ class FreeCamera:
             self.position -= self.up * velocity
         if keys[pygame.K_e]:
             self.position += self.up * velocity
+
 
     def rotate(self):
         leftPick, midPick, rightPick =pygame.mouse.get_pressed()
