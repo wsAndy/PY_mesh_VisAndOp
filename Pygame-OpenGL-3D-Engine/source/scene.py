@@ -9,5 +9,5 @@ class Scene:
     def destroy(self, ):
         [x.destroy() for x in self.models]
 
-    def render(self, ):
-        [x.render() for x in self.models]
+    def tick(self, ):
+        [x.tick() for x in self.models]

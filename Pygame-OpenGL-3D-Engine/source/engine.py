@@ -67,13 +67,13 @@ class Engine:
                 pygame.quit()
                 exit()
 
-    def render(self):
+    def tick(self):
         # Clear the framebuffer
         # self.ctx.clear(0.08, 0.16, 0.16)
         self.ctx.clear(0, 0, 0)
 
         # Render the scene
-        self.scene.render()
+        self.scene.tick()
 
         # Swap the buffers
         pygame.display.flip()
@@ -86,5 +86,5 @@ class Engine:
             self.get_time()
             self.check_events()
             self.camera.tick()
-            self.render()
+            self.tick()
             self.delta_time = self.clock.tick(60)

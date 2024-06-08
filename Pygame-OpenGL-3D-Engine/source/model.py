@@ -43,7 +43,7 @@ class Triangle:
             self.camera.view_matrix
         ) 
 
-    def render(self):
+    def tick(self):
         print('not follow camera')
         # self.update()
         self.vao.render()
@@ -131,7 +131,7 @@ class Cube:
             self.camera.view_matrix
         ) 
 
-    def render(self):
+    def tick(self):
         self.update()
         self.vao.render()
 
@@ -289,9 +289,9 @@ class CustomMesh(Actor):
             self.camera.view_matrix
         ) 
 
-    def render(self):
+    def tick(self):
         if self.STATE != 0:
-            self.tick()
+            super().tick()
             self.update()
             self.vao.render()
 
