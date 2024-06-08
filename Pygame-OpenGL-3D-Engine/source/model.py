@@ -4,6 +4,8 @@ import pygame
 
 from source.engine import Engine
 
+from source.actor import Actor
+
 
 class Triangle:
     def __init__(self, app: Engine):
@@ -196,8 +198,9 @@ class Cube:
 
 from source.loader import ModelLoader
 
-class CustomMesh:
+class CustomMesh(Actor):
     def __init__(self, app: Engine):
+        super().__init__()
         self.modelLoader = ModelLoader()
         self.app = app
         self.ctx = self.app.ctx
@@ -266,9 +269,14 @@ class CustomMesh:
         return glm.mat4()
 
     def update(self):
-        model_matrix = glm.rotate(
-            self.model_matrix, self.app.time * 0.5, glm.vec3(0.0, 1.0, 0.0)
-        )
+        # model_matrix = glm.rotate( self.model_matrix, self.app.time * 0.5, glm.vec3(0.0, 1.0, 0.0) )
+        scale = glm.scale(self.transformComponent.scale)
+        quad = glm.quat( glm.radians(glm.vec3(self.transformComponent.roll, self.transformComponent.pitch, self.transformComponent.yaw)))
+        rotation = glm.mat4_cast(quad)
+        translation = glm.translate(self.transformComponent.location)
+        
+        model_matrix = translation * rotation * scale
+
         self.shader_program['model_matrix'].write(model_matrix)
 
         self.shader_program['view_matrix'].write(
