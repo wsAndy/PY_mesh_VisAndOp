@@ -131,11 +131,12 @@ class FreeCamera(Actor):
         if rightPick != True:
             self.last_right_mouse = [0, 0]
             return
-        
+
         mouse_x, mouse_y = pygame.mouse.get_pos()
         if abs(self.last_right_mouse[0]) < 1 or abs(self.last_right_mouse[1]) < 1:
             self.last_right_mouse = [mouse_x, mouse_y]
             return
+
         current_x = (mouse_x - self.last_right_mouse[0] ) * SENSITIVITY
         current_y = (mouse_y - self.last_right_mouse[1] ) * SENSITIVITY
 

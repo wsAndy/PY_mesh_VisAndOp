@@ -55,9 +55,9 @@ class Triangle:
 
     def get_vertex_data(self):
         return np.array([
-            0.0, 0.5, 0.0,
-            -0.5, -0.5, 0.0,
-            0.5, -0.5, 0.0,
+            0, 60, 0.0,
+            0.0, -10, -10.0,
+            100, 0, 0.0,
         ], dtype='f4')
 
     def get_vbo(self):
@@ -285,6 +285,7 @@ class CustomMesh(Actor):
 
     def render(self):
         if self.STATE != 0:
+            self.tick()
             self.update()
             self.vao.render()
 
