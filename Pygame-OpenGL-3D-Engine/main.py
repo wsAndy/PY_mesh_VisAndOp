@@ -10,10 +10,10 @@ if __name__ == "__main__":
     engine.set_camera(FreeCamera(engine, (250, 250, 250)))
 
     model = CustomMesh(engine)
-    model.loadModel( os.path.join(r"C:\Users\admin\Documents\plane.fbx") )
+    model.loadModel( os.path.join(r"./assets/models/plane.fbx") )
 
     model2 = CustomMesh(engine)
-    model2.loadModel( os.path.join(r"C:\Users\admin\Documents\axes.fbx") )
+    model2.loadModel( os.path.join(r"./assets/models/axes.fbx") )
 
     scene = Scene()
     scene.add_model(model)

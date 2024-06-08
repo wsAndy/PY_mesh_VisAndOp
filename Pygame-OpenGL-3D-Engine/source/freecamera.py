@@ -98,6 +98,10 @@ class FreeCamera(Actor):
         return glm.perspective(glm.radians(FOV), self.aspect_ratio, NEAR, FAR)
 
     def move(self):
+        leftPick, midPick, rightPick =pygame.mouse.get_pressed()
+        if rightPick != True:
+            return
+        
         velocity = SPEED * self.app.delta_time
         keys = pygame.key.get_pressed()
 
