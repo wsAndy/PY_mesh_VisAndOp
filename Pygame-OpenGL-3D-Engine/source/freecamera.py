@@ -87,11 +87,13 @@ class FreeCamera(Actor):
 
     def fromUE( self, location, rotation ):
         pass
-    def toUE( self, location, rotation ):
+    def toUE( self, ):
         pass
     def fromBlender( self, location, rotation ):
-        pass
-    def toBlender( self, location, rotation ):
+        self.location = np.matmul( np.array(location),np.array([ [1, 0, 0], [0, 0, 1], [0, -1, 0]]) )
+        
+    def toBlender( self,):
+        loc = np.matmul( self.location, np.array([ [1, 0, 0], [0, 0, -1], [0, 1, 0]]) )
         pass
 
     def get_projection_matrix(self):
