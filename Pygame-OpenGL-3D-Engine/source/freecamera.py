@@ -173,7 +173,7 @@ class FreeCamera(Actor):
         self.right = right
         self.up = up
 
-    def update(self):
+    def tick(self):
         super().tick()
         
         self.move()
@@ -187,6 +187,9 @@ class FreeCamera(Actor):
         self.view_matrix = glm.lookAt(
             self.location, self.location + self.forward, self.up
         )
+
+        # print("====================")
+        # print(self.view_matrix)
 
 
 

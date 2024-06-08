@@ -39,7 +39,13 @@ class Triangle:
         )
         self.shader_program['model_matrix'].write(model_matrix)
 
+        self.shader_program['view_matrix'].write(
+            self.camera.view_matrix
+        ) 
+
     def render(self):
+        print('not follow camera')
+        # self.update()
         self.vao.render()
 
     def destroy(self):

@@ -16,12 +16,12 @@ if __name__ == "__main__":
     model2 = CustomMesh(engine)
     model2.loadModel( os.path.join(r"./assets/models/axes.fbx") )
 
-    # triangle = Triangle(engine)
+    triangle = Triangle(engine)
 
     scene = Scene()
     # scene.add_model(model)
-    scene.add_model(model2)
-    # scene.add_model(triangle)
+    # scene.add_model(model2)
+    scene.add_model(triangle)
     
     engine.set_scene(scene)
     engine.run()
