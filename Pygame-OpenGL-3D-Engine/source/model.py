@@ -19,10 +19,10 @@ class Triangle:
         self.vao = self.get_vao()
 
         self.shader_program['projection_matrix'].write(
-            self.camera.projection_matrix
+            self.camera.projection_matrix()
         )
         self.shader_program['view_matrix'].write(
-            self.camera.view_matrix
+            self.camera.view_matrix()
         )
 
         self.model_matrix = self.get_model_matrix()
@@ -40,7 +40,7 @@ class Triangle:
         self.shader_program['model_matrix'].write(model_matrix)
 
         self.shader_program['view_matrix'].write(
-            self.camera.view_matrix
+            self.camera.view_matrix()
         ) 
 
     def tick(self):
@@ -101,10 +101,10 @@ class Cube:
         self.texture.use()
 
         self.shader_program['projection_matrix'].write(
-            self.camera.projection_matrix
+            self.camera.projection_matrix()
         )
         self.shader_program['view_matrix'].write(
-            self.camera.view_matrix
+            self.camera.view_matrix()
         )
 
         self.model_matrix = self.get_model_matrix()
@@ -128,7 +128,7 @@ class Cube:
         self.shader_program['model_matrix'].write(model_matrix)
 
         self.shader_program['view_matrix'].write(
-            self.camera.view_matrix
+            self.camera.view_matrix()
         ) 
 
     def tick(self):
@@ -229,10 +229,10 @@ class CustomMesh(Actor):
         self.texture.use()
 
         self.shader_program['projection_matrix'].write(
-            self.camera.projection_matrix
+            self.camera.projection_matrix()
         )
         self.shader_program['view_matrix'].write(
-            self.camera.view_matrix
+            self.camera.view_matrix()
         )
 
         self.model_matrix = self.get_model_matrix()
@@ -297,7 +297,7 @@ class CustomMesh(Actor):
         self.shader_program['model_matrix'].write(model_matrix)
 
         self.shader_program['view_matrix'].write(
-            self.camera.view_matrix
+            self.camera.view_matrix()
         ) 
 
     def tick(self):
