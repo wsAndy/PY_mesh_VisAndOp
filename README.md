@@ -10,13 +10,16 @@
 
 ### 可微分渲染
 - [x] mitsuba3
+  - [x] ray tracing 【pytorch3d、nviffrast，采用光栅化】
+  - [x] 材质表达是PBR 
 
 ### 并行计算
 - [x] pyopencl
 
 ### 渲染任务
-- [x] pyrender
 - [x] moderngl 
+  - [x] opengl映射,简化上下文，渲染更快，更底层。要自己完成管线。
+  - [x] Compute Shader  
 - [x] open3d
   - [x] 离屏默认支持，和headless不是一个东西
   - [x] 源码编译支持离屏渲染
