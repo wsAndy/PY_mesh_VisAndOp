@@ -2,6 +2,7 @@ import json
 from typing import Any
 
 from .scene import Scene
+from source.actor import Actor
 
 import moderngl
 import pygame
@@ -49,7 +50,7 @@ class Engine:
         # Create a clock to limit the framerate
         self.clock = pygame.time.Clock()
 
-    def set_camera(self, camera: Any):
+    def set_camera(self, camera: Actor):
         self.camera = camera
 
     def set_scene(self, scene: Scene):
@@ -66,13 +67,13 @@ class Engine:
                 pygame.quit()
                 exit()
 
-    def render(self):
+    def tick(self):
         # Clear the framebuffer
         # self.ctx.clear(0.08, 0.16, 0.16)
         self.ctx.clear(0, 0, 0)
 
         # Render the scene
-        self.scene.render()
+        self.scene.tick()
 
         # Swap the buffers
         pygame.display.flip()
@@ -84,6 +85,6 @@ class Engine:
         while True:  
             self.get_time()
             self.check_events()
-            self.camera.update()
-            self.render()
+            self.camera.tick()
+            self.tick()
             self.delta_time = self.clock.tick(60)

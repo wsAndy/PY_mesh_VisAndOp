@@ -4,6 +4,8 @@ import pygame
 
 from source.engine import Engine
 
+from source.actor import Actor
+
 
 class Triangle:
     def __init__(self, app: Engine):
@@ -17,10 +19,10 @@ class Triangle:
         self.vao = self.get_vao()
 
         self.shader_program['projection_matrix'].write(
-            self.camera.projection_matrix
+            self.camera.projection_matrix()
         )
         self.shader_program['view_matrix'].write(
-            self.camera.view_matrix
+            self.camera.view_matrix()
         )
 
         self.model_matrix = self.get_model_matrix()
@@ -37,7 +39,13 @@ class Triangle:
         )
         self.shader_program['model_matrix'].write(model_matrix)
 
-    def render(self):
+        self.shader_program['view_matrix'].write(
+            self.camera.view_matrix()
+        ) 
+
+    def tick(self):
+        print('not follow camera')
+        # self.update()
         self.vao.render()
 
     def destroy(self):
@@ -53,9 +61,9 @@ class Triangle:
 
     def get_vertex_data(self):
         return np.array([
-            0.0, 0.5, 0.0,
-            -0.5, -0.5, 0.0,
-            0.5, -0.5, 0.0,
+            0, 60, 0.0,
+            0.0, -10, -10.0,
+            100, 0, 0.0,
         ], dtype='f4')
 
     def get_vbo(self):
@@ -93,10 +101,10 @@ class Cube:
         self.texture.use()
 
         self.shader_program['projection_matrix'].write(
-            self.camera.projection_matrix
+            self.camera.projection_matrix()
         )
         self.shader_program['view_matrix'].write(
-            self.camera.view_matrix
+            self.camera.view_matrix()
         )
 
         self.model_matrix = self.get_model_matrix()
@@ -120,10 +128,10 @@ class Cube:
         self.shader_program['model_matrix'].write(model_matrix)
 
         self.shader_program['view_matrix'].write(
-            self.camera.view_matrix
+            self.camera.view_matrix()
         ) 
 
-    def render(self):
+    def tick(self):
         self.update()
         self.vao.render()
 
@@ -196,8 +204,9 @@ class Cube:
 
 from source.loader import ModelLoader
 
-class CustomMesh:
+class CustomMesh(Actor):
     def __init__(self, app: Engine):
+        super().__init__()
         self.modelLoader = ModelLoader()
         self.app = app
         self.ctx = self.app.ctx
@@ -220,10 +229,10 @@ class CustomMesh:
         self.texture.use()
 
         self.shader_program['projection_matrix'].write(
-            self.camera.projection_matrix
+            self.camera.projection_matrix()
         )
         self.shader_program['view_matrix'].write(
-            self.camera.view_matrix
+            self.camera.view_matrix()
         )
 
         self.model_matrix = self.get_model_matrix()
@@ -255,6 +264,11 @@ class CustomMesh:
         )
         self.STATE=1
 
+        ## 模型在blender中的euler（XYZ）对应到当前component的ypr
+        # self.transformComponent.roll = 10 # X
+        # self.transformComponent.pitch = 30 # Z
+        # self.transformComponent.yaw = -20 # -Y
+
 
     def get_texture(self, path: str):
         texture = pygame.image.load(path).convert()
@@ -266,17 +280,29 @@ class CustomMesh:
         return glm.mat4()
 
     def update(self):
-        model_matrix = glm.rotate(
-            self.model_matrix, self.app.time * 0.5, glm.vec3(0.0, 1.0, 0.0)
-        )
+        '''
+        逆时针正
+        Roll: 从X轴+看-
+        Pitch: 从Y轴+看-
+        Yaw: 从Z轴+看-
+        '''
+        # model_matrix = glm.rotate( self.model_matrix, self.app.time * 0.5, glm.vec3(0.0, 1.0, 0.0) )
+        scale = glm.scale(self.transformComponent.scale)
+        quad = glm.quat( glm.radians(glm.vec3(self.transformComponent.roll, self.transformComponent.pitch, self.transformComponent.yaw)))
+        rotation = glm.mat4_cast(quad)
+        translation = glm.translate(self.transformComponent.location)
+        
+        model_matrix = translation * rotation * scale
+
         self.shader_program['model_matrix'].write(model_matrix)
 
         self.shader_program['view_matrix'].write(
-            self.camera.view_matrix
+            self.camera.view_matrix()
         ) 
 
-    def render(self):
+    def tick(self):
         if self.STATE != 0:
+            super().tick()
             self.update()
             self.vao.render()
 
