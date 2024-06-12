@@ -22,6 +22,7 @@ class GLCamera(Actor):
         self.m_farPlane = 100000
 
     def rotation(self):
+        # 四元数转旋转，这么操作没问题，但是反过来不能直接 glm.quat_cast( rot_matrix )
         return glm.mat4_cast(self.m_orientation)
     def getPosition(self):
         return self.m_position
@@ -31,7 +32,7 @@ class GLCamera(Actor):
         return glm.vec3(glm.row(self.rotation(), 1))
     def forward(self):
         # 注意，相机是看向Z的负轴的，此处计算的foward实际是相机的背面
-        return glm.vec3(glm.row(self.rotation(), 2))
+        return -glm.vec3(glm.row(self.rotation(), 2))
     def setPosition(self, position):
         self.m_position = glm.vec3(position)
 
@@ -55,8 +56,8 @@ class GLCamera(Actor):
         self.m_orientation *= rot
 
     def roll(self, angle: float):
-        # 可能有bug！为了保持镜头坐标系和opengl坐标系的旋转正负完全一致，此处的foward实际的背面
-        rot = glm.normalize(glm.angleAxis( glm.radians(angle), self.forward()))
+        # 为了保持镜头坐标系和opengl坐标系的旋转正负完全一致，此处的foward实际的背面,取angle也反一下
+        rot = glm.normalize(glm.angleAxis( glm.radians(-angle), self.forward()))
         self.m_orientation *= rot
 
     def projection(self):
@@ -86,6 +87,11 @@ class GLCamera(Actor):
     def tick(self):
         # print(self.rotation())
         # self.yaw(-0.5)
+        print('------------')
+        print(self.getPosition())
+        print(self.right())
+        print(self.up())
+        print(self.forward())
 
         # self.pitch()
         pass

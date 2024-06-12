@@ -19,9 +19,9 @@ if __name__ == "__main__":
     # yaw 从+y看-y，顺时针为正
     # pitch 从+x看-x，顺时针为正
     # roll 从+z看-z，顺时针为正
-    camera.yaw(-45)
-    camera.pitch(45)
-    # camera.roll(30)
+    # camera.yaw(-45)
+    # camera.pitch(45)
+    camera.roll(30)
 
 
     engine.set_camera(camera)
