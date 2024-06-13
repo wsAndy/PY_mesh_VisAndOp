@@ -269,13 +269,16 @@ class CustomMesh(Actor):
         
         def leftHand2RightHand(yaw,pitch,roll):
             return yaw-90, -roll, pitch
-        
+
         yaw,pitch,roll = leftHand2RightHand(45, 20, 0)
 
         ## 逆时针为正
         # self.transformComponent.roll(45)
         # self.transformComponent.pitch(45)
-        # self.transformComponent.yaw(45)
+
+        self.transformComponent.roll(0)
+        self.transformComponent.pitch(0)
+        self.transformComponent.yaw(0)
 
     def get_texture(self, path: str):
         texture = pygame.image.load(path).convert()
@@ -292,7 +295,7 @@ class CustomMesh(Actor):
         scale = glm.scale(self.transformComponent.scale)
         rotation = self.transformComponent.rotation()
         translation = glm.translate(self.transformComponent.location)
-        
+
         model_matrix = translation * rotation * scale
 
         self.shader_program['model_matrix'].write(model_matrix)
