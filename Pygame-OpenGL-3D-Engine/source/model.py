@@ -272,15 +272,10 @@ class CustomMesh(Actor):
         
         yaw,pitch,roll = leftHand2RightHand(45, 20, 0)
 
-        # -45, 0, 20
-
-        self.transformComponent.yaw = -45# yaw
-        self.transformComponent.pitch = 0# pitch
-        self.transformComponent.roll = -45   # roll
-
-        ## TODO: 但是真这么写，还有BUG！！！
-
-
+        ## 逆时针为正
+        # self.transformComponent.roll(45)
+        # self.transformComponent.pitch(45)
+        # self.transformComponent.yaw(45)
 
     def get_texture(self, path: str):
         texture = pygame.image.load(path).convert()
@@ -295,10 +290,7 @@ class CustomMesh(Actor):
         # model_matrix = glm.rotate( self.model_matrix, self.app.time * 0.5, glm.vec3(0.0, 1.0, 0.0) )
 
         scale = glm.scale(self.transformComponent.scale)
-        
-        # 下面做了坐标系映射，与镜头的view保持同步
-        quad = glm.quat( glm.radians(glm.vec3( -self.transformComponent.pitch, -self.transformComponent.yaw, -self.transformComponent.roll)))
-        rotation = glm.mat4_cast(quad)
+        rotation = self.transformComponent.rotation()
         translation = glm.translate(self.transformComponent.location)
         
         model_matrix = translation * rotation * scale

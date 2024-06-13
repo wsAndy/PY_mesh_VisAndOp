@@ -1,4 +1,3 @@
-from source.freecamera import FreeCamera
 from source.glcamera import GLCamera
 from source.engine import Engine
 from source.model import Cube
@@ -9,7 +8,6 @@ import os
 
 if __name__ == "__main__":
     engine = Engine(gl_version=(4, 6),window_size=(512, 512))
-    # engine.set_camera(FreeCamera(engine, (250, 250, 250)))
 
     camera = GLCamera(engine)
     camera.setPosition((250, 250, 250))
@@ -24,14 +22,10 @@ if __name__ == "__main__":
         return yaw + 90, -pitch, roll
 
     yaw,pitch,roll = cameraleftHand2RightHand(225, -45, 0)
-    ## -45, 45, 0
+    
     camera.yaw(yaw)
     camera.pitch(pitch)
     camera.roll(roll)
-
-    # camera.yaw(-45)
-    # camera.pitch(45)
-    # camera.roll(0)
 
     engine.set_camera(camera)
 
