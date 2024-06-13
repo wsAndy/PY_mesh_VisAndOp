@@ -285,9 +285,6 @@ class CustomMesh(Actor):
         # 下面做了坐标系映射，与镜头的view保持同步
         quad = glm.quat( glm.radians(glm.vec3( -self.transformComponent.pitch, -self.transformComponent.yaw, -self.transformComponent.roll)))
         rotation = glm.mat4_cast(quad)
-
-        print('======')
-        print(rotation)
         translation = glm.translate(self.transformComponent.location)
         
         model_matrix = translation * rotation * scale
