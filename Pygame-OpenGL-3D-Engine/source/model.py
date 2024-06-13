@@ -266,6 +266,20 @@ class CustomMesh(Actor):
 
         # 物体的local坐标系，现在和opengl 右手系保持一致
         # self.transformComponent.pitch = 30
+        
+        def leftHand2RightHand(yaw,pitch,roll):
+            return yaw-90, -roll, pitch
+        
+        yaw,pitch,roll = leftHand2RightHand(45, 20, 0)
+
+        # -45, 0, 20
+
+        self.transformComponent.yaw = -45# yaw
+        self.transformComponent.pitch = 0# pitch
+        self.transformComponent.roll = -45   # roll
+
+        ## TODO: 但是真这么写，还有BUG！！！
+
 
 
     def get_texture(self, path: str):
