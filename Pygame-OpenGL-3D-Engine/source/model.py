@@ -264,10 +264,8 @@ class CustomMesh(Actor):
         )
         self.STATE=1
 
-        ## 模型在blender中的euler（XYZ）对应到当前component的ypr
-        # self.transformComponent.roll = 10 # X
-        # self.transformComponent.pitch = 30 # Z
-        # self.transformComponent.yaw = -20 # -Y
+        # 物体的local坐标系，现在和opengl 右手系保持一致
+        # self.transformComponent.pitch = 30
 
 
     def get_texture(self, path: str):
@@ -280,16 +278,16 @@ class CustomMesh(Actor):
         return glm.mat4()
 
     def update(self):
-        '''
-        逆时针正
-        Roll: 从X轴+看-
-        Pitch: 从Y轴+看-
-        Yaw: 从Z轴+看-
-        '''
         # model_matrix = glm.rotate( self.model_matrix, self.app.time * 0.5, glm.vec3(0.0, 1.0, 0.0) )
+
         scale = glm.scale(self.transformComponent.scale)
-        quad = glm.quat( glm.radians(glm.vec3(self.transformComponent.roll, self.transformComponent.pitch, self.transformComponent.yaw)))
+        
+        # 下面做了坐标系映射，与镜头的view保持同步
+        quad = glm.quat( glm.radians(glm.vec3( -self.transformComponent.pitch, -self.transformComponent.yaw, -self.transformComponent.roll)))
         rotation = glm.mat4_cast(quad)
+
+        print('======')
+        print(rotation)
         translation = glm.translate(self.transformComponent.location)
         
         model_matrix = translation * rotation * scale
@@ -328,4 +326,5 @@ class CustomMesh(Actor):
             vertex_shader=vertex_code,
             fragment_shader=fragment_code,
         )
+    
      

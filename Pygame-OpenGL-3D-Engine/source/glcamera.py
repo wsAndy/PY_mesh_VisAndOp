@@ -87,11 +87,11 @@ class GLCamera(Actor):
     def tick(self):
         # print(self.rotation())
         # self.yaw(-0.5)
-        print('------------')
-        print(self.getPosition())
-        print(self.right())
-        print(self.up())
-        print(self.forward())
+        # print('------------')
+        # print(self.getPosition())
+        # print(self.right())
+        # print(self.up())
+        # print(self.forward())
 
         # self.pitch()
         pass

@@ -19,10 +19,19 @@ if __name__ == "__main__":
     # yaw 从+y看-y，顺时针为正
     # pitch 从+x看-x，顺时针为正
     # roll 从+z看-z，顺时针为正
+
+    def cameraleftHand2RightHand(yaw,pitch,roll):
+        return yaw + 90, -pitch, roll
+
+    yaw,pitch,roll = cameraleftHand2RightHand(225, -45, 0)
+    ## -45, 45, 0
+    camera.yaw(yaw)
+    camera.pitch(pitch)
+    camera.roll(roll)
+
     # camera.yaw(-45)
     # camera.pitch(45)
-    camera.roll(30)
-
+    # camera.roll(0)
 
     engine.set_camera(camera)
 
