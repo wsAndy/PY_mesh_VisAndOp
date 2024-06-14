@@ -62,6 +62,14 @@ class GLCamera(Actor):
         rot = glm.normalize(glm.angleAxis( glm.radians(-angle), self.forward()))
         self.m_orientation *= rot
 
+    def yawGlobal(self, angle: float):
+        '''
+        围绕世界的垂直方向转
+        '''
+        rot = glm.normalize(glm.angleAxis( glm.radians(angle), glm.vec3(0, 1, 0) ))
+        self.m_orientation *= rot
+
+
     def setYPR(self, yaw:float, pitch:float, roll: float):
         '''
         指定yaw、pitch、roll特定角度下的最终朝向
@@ -110,11 +118,10 @@ class GLCamera(Actor):
         # print(self.rotation())
         # # self.yaw(-0.5)
         # print('------ camera ------')
-        # # print(self.getPosition())
+        # print(self.getPosition())
         # print(self.forward())
         # print(self.up())
         # print(self.right())
-        
 
         # self.pitch()
         pass

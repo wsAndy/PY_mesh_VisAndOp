@@ -18,7 +18,7 @@ if __name__ == "__main__":
     # pitch 从+x看-x，顺时针为正
     # roll 从+z看-z，顺时针为正
 
-    yaw,pitch,roll = camera.cameraleftHand2RightHand(225, -45, 30)
+    yaw,pitch,roll = camera.cameraleftHand2RightHand(225, -45, 0)
     camera.setYPR(yaw, pitch, roll)
 
     engine.set_camera(camera)
@@ -27,10 +27,10 @@ if __name__ == "__main__":
     # model.loadModel( os.path.join(r"./assets/models/plane.fbx") )
 
     model2 = CustomMesh(engine)
-    model2.loadModel( os.path.join(r"./assets/models/axes.fbx") )
+    model2.loadModel( os.path.join(r"./assets/models/plane.fbx") )
 
-    yaw,pitch,roll=model2.leftHand2RightHand(10, 20, 30)
-    model2.transformComponent.setYPR(yaw, pitch, roll)
+    # yaw,pitch,roll=model2.leftHand2RightHand(10, 20, 30)
+    # model2.transformComponent.setYPR(yaw, pitch, roll)
     
 
     scene = Scene()
