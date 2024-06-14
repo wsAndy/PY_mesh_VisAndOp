@@ -1,9 +1,6 @@
 import json
 from typing import Any
 
-from .scene import Scene
-from source.actor import Actor
-
 import moderngl
 import pygame
 
@@ -52,10 +49,10 @@ class Engine:
         
         self.last_right_mouse = [0, 0]
 
-    def set_camera(self, camera: Actor):
+    def set_camera(self, camera):
         self.camera = camera
 
-    def set_scene(self, scene: Scene):
+    def set_scene(self, scene):
         # Scene
         self.scene = scene
 

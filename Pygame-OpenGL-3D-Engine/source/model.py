@@ -16,26 +16,29 @@ class GlobalAxes(Actor):
         self.ctx = self.app.ctx
         self.camera = self.app.camera
         # 定义顶点数据和索引
-        self.vertices = np.array([
+        self.verticesX = np.array([
             0.0, 0.0, 0.0,  # 原点
-            1000.0, 0.0, 0.0,  # X轴
-            0.0, 1000.0, 0.0,  # Y轴
-            0.0, 0.0, 1000.0,  # Z轴
+            self.camera.m_farPlane, 0.0, 0.0,  # X轴
         ], dtype='f4')
-        self.color = np.array([
-            1, 1, 1,
-            1, 0, 0,
-            0, 1, 0,
-            0, 0, 1
+        self.verticesY = np.array([
+            0.0, 0.0, 0.0,  # 原点
+            0.0, self.camera.m_farPlane, 0.0,  # Y轴
         ], dtype='f4')
-        self.indices = np.array([
-            0, 1,
-            0, 2,
-            0, 3,
-        ], dtype='i4')
-        self.vbo = self.ctx.buffer(self.vertices)
+        self.verticesZ = np.array([
+            0.0, 0.0, 0.0,  # 原点
+            0.0, 0.0, self.camera.m_farPlane,  # Z轴
+        ], dtype='f4')
+
+        self.indices = np.array([0, 1], dtype='i4')
         self.ibo = self.ctx.buffer(self.indices)
-        self.colorBuffer = self.ctx.buffer(self.color)
+
+        self.vboX = self.ctx.buffer(self.verticesX)
+        self.vboY = self.ctx.buffer(self.verticesY)
+        self.vboZ = self.ctx.buffer(self.verticesZ)
+
+        self.colorBufferRed = self.ctx.buffer( np.array([1, 0, 0, 1, 0, 0], dtype='f4') )
+        self.colorBufferGreen = self.ctx.buffer(np.array([0, 1, 0, 0, 1, 0], dtype='f4'))
+        self.colorBufferBlue = self.ctx.buffer(np.array([0, 0, 1, 0, 0, 1], dtype='f4'))
 
         # 创建着色器程序
         self.prog = self.ctx.program(
@@ -61,11 +64,27 @@ class GlobalAxes(Actor):
         )
 
         # 设置顶点属性
-        self.vao = self.ctx.vertex_array(
+        self.vaoX = self.ctx.vertex_array(
             program=self.prog,
             content=[
-                (self.vbo, '3f', 'in_vert'),
-                (self.colorBuffer, '3f', 'in_color')
+                (self.vboX, '3f', 'in_vert'),
+                (self.colorBufferRed, '3f', 'in_color')
+            ],
+            index_buffer=self.ibo
+        )
+        self.vaoY = self.ctx.vertex_array(
+            program=self.prog,
+            content=[
+                (self.vboY, '3f', 'in_vert'),
+                (self.colorBufferGreen, '3f', 'in_color')
+            ],
+            index_buffer=self.ibo
+        )
+        self.vaoZ = self.ctx.vertex_array(
+            program=self.prog,
+            content=[
+                (self.vboZ, '3f', 'in_vert'),
+                (self.colorBufferBlue, '3f', 'in_color')
             ],
             index_buffer=self.ibo
         )
@@ -73,15 +92,29 @@ class GlobalAxes(Actor):
     def tick(self):
         mvp = self.camera.projection_matrix() * self.camera.view_matrix()
         self.prog['Mvp'].write(mvp)
-        self.vao.render(moderngl.LINES)
+        oriLineWidth = self.ctx.line_width
+        self.ctx.line_width = 3
+        self.vaoX.render(moderngl.LINES)
+        self.vaoY.render(moderngl.LINES)
+        self.vaoZ.render(moderngl.LINES)
+        self.ctx.line_width = oriLineWidth
 
     def destroy(self):
         super().destroy()
-        self.vbo.release()
-        self.vao.release()
+        self.vboX.release()
+        self.vboY.release()
+        self.vboZ.release()
+
+        self.vaoX.release()
+        self.vaoY.release()
+        self.vaoZ.release()
+
+        self.colorBufferRed.release()
+        self.colorBufferGreen.release()
+        self.colorBufferBlue.release()
+
         self.prog.release()
         self.ibo.release()
-        self.colorBuffer.release()
 
 class Triangle:
     def __init__(self, app: Engine):
