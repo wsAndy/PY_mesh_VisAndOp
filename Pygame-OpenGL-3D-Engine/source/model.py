@@ -6,6 +6,82 @@ from source.engine import Engine
 
 from source.actor import Actor
 
+import moderngl
+
+
+class GlobalAxes(Actor):
+    def __init__(self, app: Engine):
+        super().__init__()
+        self.app = app
+        self.ctx = self.app.ctx
+        self.camera = self.app.camera
+        # 定义顶点数据和索引
+        self.vertices = np.array([
+            0.0, 0.0, 0.0,  # 原点
+            1000.0, 0.0, 0.0,  # X轴
+            0.0, 1000.0, 0.0,  # Y轴
+            0.0, 0.0, 1000.0,  # Z轴
+        ], dtype='f4')
+        self.color = np.array([
+            1, 1, 1,
+            1, 0, 0,
+            0, 1, 0,
+            0, 0, 1
+        ], dtype='f4')
+        self.indices = np.array([
+            0, 1,
+            0, 2,
+            0, 3,
+        ], dtype='i4')
+        self.vbo = self.ctx.buffer(self.vertices)
+        self.ibo = self.ctx.buffer(self.indices)
+        self.colorBuffer = self.ctx.buffer(self.color)
+
+        # 创建着色器程序
+        self.prog = self.ctx.program(
+            vertex_shader = '''
+                #version 330
+                uniform mat4 Mvp;
+                layout (location=0) in vec3 in_vert;
+                layout (location=1) in vec3 in_color;
+                out vec3 v_color;
+                void main() {
+                    v_color = in_color; 
+                    gl_Position = Mvp * vec4(in_vert, 1.0);
+                }
+            ''',
+            fragment_shader = '''
+                #version 330
+                out vec4 f_color;
+                in vec3 v_color;
+                void main() {
+                    f_color = vec4(v_color, 1.0);
+                }
+            ''',
+        )
+
+        # 设置顶点属性
+        self.vao = self.ctx.vertex_array(
+            program=self.prog,
+            content=[
+                (self.vbo, '3f', 'in_vert'),
+                (self.colorBuffer, '3f', 'in_color')
+            ],
+            index_buffer=self.ibo
+        )
+
+    def tick(self):
+        mvp = self.camera.projection_matrix() * self.camera.view_matrix()
+        self.prog['Mvp'].write(mvp)
+        self.vao.render(moderngl.LINES)
+
+    def destroy(self):
+        super().destroy()
+        self.vbo.release()
+        self.vao.release()
+        self.prog.release()
+        self.ibo.release()
+        self.colorBuffer.release()
 
 class Triangle:
     def __init__(self, app: Engine):

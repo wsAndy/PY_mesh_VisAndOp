@@ -1,7 +1,6 @@
 from source.glcamera import GLCamera
 from source.engine import Engine
-from source.model import Cube
-from source.model import Triangle
+from source.model import GlobalAxes
 from source.model import CustomMesh
 from source.scene import Scene
 import os
@@ -27,7 +26,9 @@ if __name__ == "__main__":
     # model.loadModel( os.path.join(r"./assets/models/plane.fbx") )
 
     model2 = CustomMesh(engine)
-    model2.loadModel( os.path.join(r"./assets/models/plane.fbx") )
+    model2.loadModel( os.path.join(r"./assets/models/axes.fbx") )
+
+    globalAxes = GlobalAxes(engine)
 
     # yaw,pitch,roll=model2.leftHand2RightHand(10, 20, 30)
     # model2.transformComponent.setYPR(yaw, pitch, roll)
@@ -36,7 +37,7 @@ if __name__ == "__main__":
     scene = Scene()
     # scene.add_model(model)
     scene.add_model(model2)
-    # scene.add_model(triangle)
+    scene.add_model(globalAxes)
     
     engine.set_scene(scene)
     engine.run()
