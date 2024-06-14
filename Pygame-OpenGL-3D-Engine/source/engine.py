@@ -49,6 +49,8 @@ class Engine:
         self.delta_time = 0.0
         # Create a clock to limit the framerate
         self.clock = pygame.time.Clock()
+        
+        self.last_right_mouse = [0, 0]
 
     def set_camera(self, camera: Actor):
         self.camera = camera
@@ -66,6 +68,46 @@ class Engine:
                 self.scene.destroy()
                 pygame.quit()
                 exit()
+
+    def control_events(self):
+        leftPick, midPick, rightPick =pygame.mouse.get_pressed()
+        if rightPick != True:
+            self.last_right_mouse = [0, 0]
+            return
+        SPEED = 1
+        SENSITIVITY = 0.1
+
+        # --------------- move 
+        velocity = SPEED * self.delta_time
+        keys = pygame.key.get_pressed()
+
+        if keys[pygame.K_w]:
+            self.camera.moveForwardBackward(-velocity)
+        if keys[pygame.K_s]:
+            self.camera.moveForwardBackward(velocity)
+        if keys[pygame.K_a]:
+            self.camera.moveLeftRight(velocity)
+        if keys[pygame.K_d]:
+            self.camera.moveLeftRight(-velocity)
+        if keys[pygame.K_q]:
+            self.camera.moveUpDown(velocity)
+        if keys[pygame.K_e]:
+            self.camera.moveUpDown(-velocity)
+
+        # --------------- rotate 
+        mouse_x, mouse_y = pygame.mouse.get_pos()
+        if abs(self.last_right_mouse[0]) < 1 or abs(self.last_right_mouse[1]) < 1:
+            self.last_right_mouse = [mouse_x, mouse_y]
+            return
+
+        current_x = (mouse_x - self.last_right_mouse[0] ) * SENSITIVITY
+        current_y = (mouse_y - self.last_right_mouse[1] ) * SENSITIVITY
+
+        self.last_right_mouse = [mouse_x, mouse_y]
+
+        self.camera.yaw(current_x)
+        self.camera.pitch(current_y)
+
 
     def tick(self):
         # Clear the framebuffer
@@ -85,6 +127,7 @@ class Engine:
         while True:  
             self.get_time()
             self.check_events()
+            self.control_events()
             self.camera.tick()
             self.tick()
             self.delta_time = self.clock.tick(60)
