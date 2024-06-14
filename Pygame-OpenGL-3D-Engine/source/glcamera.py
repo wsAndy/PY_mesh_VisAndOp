@@ -21,6 +21,9 @@ class GLCamera(Actor):
         self.m_nearPlane = 0.1
         self.m_farPlane = 100000
 
+    def cameraleftHand2RightHand(self, yaw,pitch,roll):
+        return yaw + 90, -pitch, roll
+
     def rotation(self):
         # 四元数转旋转，这么操作没问题，但是反过来不能直接 glm.quat_cast( rot_matrix )
         return glm.mat4_cast(self.m_orientation)
@@ -67,8 +70,6 @@ class GLCamera(Actor):
 
     def translation(self):
         return glm.translate(glm.mat4(), -self.m_position)
-    def rotation(self):
-        return glm.mat4_cast(self.m_orientation)
     def view(self):
         return self.rotation() * self.translation()
     def view_matrix(self):
@@ -86,12 +87,13 @@ class GLCamera(Actor):
 
     def tick(self):
         # print(self.rotation())
-        # self.yaw(-0.5)
-        # print('------------')
-        # print(self.getPosition())
-        # print(self.right())
-        # print(self.up())
+        # # self.yaw(-0.5)
+        # print('------ camera ------')
+        # # print(self.getPosition())
         # print(self.forward())
+        # print(self.up())
+        # print(self.right())
+        
 
         # self.pitch()
         pass

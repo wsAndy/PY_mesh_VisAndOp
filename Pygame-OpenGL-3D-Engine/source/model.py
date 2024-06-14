@@ -203,6 +203,7 @@ class Cube:
 
 
 from source.loader import ModelLoader
+from source.components.transformComp import TransformComponent
 
 class CustomMesh(Actor):
     def __init__(self, app: Engine):
@@ -265,20 +266,22 @@ class CustomMesh(Actor):
         self.STATE=1
 
         # 物体的local坐标系，现在和opengl 右手系保持一致
-        # self.transformComponent.pitch = 30
-        
-        def leftHand2RightHand(yaw,pitch,roll):
-            return yaw-90, -roll, pitch
+        # self.transformComponent.location = glm.vec3( 0, 0, 0)
 
-        yaw,pitch,roll = leftHand2RightHand(45, 20, 0)
+        # ## 顺时针为正
+        # # 输入ue ypr
+        # yaw,pitch,roll = self.leftHand2RightHand(202.862775, 173.8452, 149.172)
+        # ## 注意,从UE过来,经过坐标系变换,物体rot计算顺序为yaw\roll\pitch
+        # self.transformComponent.yaw(yaw)
+        # self.transformComponent.roll(roll)
+        # self.transformComponent.pitch(pitch)
 
-        ## 逆时针为正
-        # self.transformComponent.roll(45)
-        # self.transformComponent.pitch(45)
+        # self.transformComponent.yaw(45)
+        # self.transformComponent.roll(-45)
+        # self.transformComponent.pitch(-45)
 
-        self.transformComponent.roll(0)
-        self.transformComponent.pitch(0)
-        self.transformComponent.yaw(0)
+    def leftHand2RightHand(self, yaw, pitch, roll):
+        return yaw, -roll, -pitch
 
     def get_texture(self, path: str):
         texture = pygame.image.load(path).convert()
@@ -293,10 +296,16 @@ class CustomMesh(Actor):
         # model_matrix = glm.rotate( self.model_matrix, self.app.time * 0.5, glm.vec3(0.0, 1.0, 0.0) )
 
         scale = glm.scale(self.transformComponent.scale)
-        rotation = self.transformComponent.rotation()
+        rotation = glm.transpose(self.transformComponent.rotation())
         translation = glm.translate(self.transformComponent.location)
 
         model_matrix = translation * rotation * scale
+
+        # print('------ model ------')
+        # print(self.transformComponent.forward())
+        # print(self.transformComponent.up())
+        # print(self.transformComponent.right())
+        
 
         self.shader_program['model_matrix'].write(model_matrix)
 

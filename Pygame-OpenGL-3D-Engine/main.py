@@ -18,11 +18,8 @@ if __name__ == "__main__":
     # pitch 从+x看-x，顺时针为正
     # roll 从+z看-z，顺时针为正
 
-    def cameraleftHand2RightHand(yaw,pitch,roll):
-        return yaw + 90, -pitch, roll
-
-    yaw,pitch,roll = cameraleftHand2RightHand(225, -45, 0)
-    
+    yaw,pitch,roll = camera.cameraleftHand2RightHand(225, -45, 0)
+    ## TODO: 目前还是增量变化,没有直接指定的接口.注意顺序
     camera.yaw(yaw)
     camera.pitch(pitch)
     camera.roll(roll)
@@ -35,7 +32,11 @@ if __name__ == "__main__":
     model2 = CustomMesh(engine)
     model2.loadModel( os.path.join(r"./assets/models/axes.fbx") )
 
-    # triangle = Triangle(engine)
+    yaw,pitch,roll=model2.leftHand2RightHand(10, 20, 30)
+    ## TODO: 目前还是增量变化,没有直接指定的接口.注意顺序.
+    model2.transformComponent.yaw(yaw)
+    model2.transformComponent.roll(roll)
+    model2.transformComponent.pitch(pitch)
 
     scene = Scene()
     # scene.add_model(model)

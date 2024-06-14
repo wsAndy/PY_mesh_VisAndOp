@@ -16,11 +16,11 @@ class TransformComponent(BaseComponent):
         self._m_orientation = glm.fquat(1, 0, 0, 0)
     
     def right(self):
-        return glm.vec3(glm.row(self.rotation(), 2))
+        return glm.vec3(glm.row(self.rotation(), 0))
     def up(self):
         return glm.vec3(glm.row(self.rotation(), 1))
     def forward(self):
-        return glm.vec3(glm.row(self.rotation(), 0))
+        return -glm.vec3(glm.row(self.rotation(), 2))
     
     def rotate(self, angle, axis):
         rot = glm.normalize(glm.angleAxis( glm.radians(angle), axis))
@@ -32,7 +32,7 @@ class TransformComponent(BaseComponent):
         rot = glm.normalize(glm.angleAxis( glm.radians(angle), self.up()))
         self._m_orientation *= rot
     def roll(self, angle: float):
-        rot = glm.normalize(glm.angleAxis( glm.radians(angle), self.forward()))
+        rot = glm.normalize(glm.angleAxis( glm.radians(-angle), self.forward()))
         self._m_orientation *= rot
 
 
