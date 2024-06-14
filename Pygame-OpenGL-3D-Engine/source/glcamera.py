@@ -57,11 +57,31 @@ class GLCamera(Actor):
     def yaw(self, angle: float):
         rot = glm.normalize(glm.angleAxis( glm.radians(angle), self.up()))
         self.m_orientation *= rot
-
     def roll(self, angle: float):
         # 为了保持镜头坐标系和opengl坐标系的旋转正负完全一致，此处的foward实际的背面,取angle也反一下
         rot = glm.normalize(glm.angleAxis( glm.radians(-angle), self.forward()))
         self.m_orientation *= rot
+
+    def setYPR(self, yaw:float, pitch:float, roll: float):
+        '''
+        指定yaw、pitch、roll特定角度下的最终朝向
+        '''
+        oriQuat = glm.fquat(1, 0, 0, 0) 
+        
+        _up = glm.vec3(glm.row(glm.mat4_cast(oriQuat), 1))
+        YawRot = glm.normalize(glm.angleAxis( glm.radians(yaw), _up))
+        oriQuat *= YawRot
+
+        _right = glm.vec3(glm.row(glm.mat4_cast(oriQuat), 0))
+        PitchRot = glm.normalize(glm.angleAxis( glm.radians(pitch), _right ))
+        oriQuat *= PitchRot
+        
+        _forward = -glm.vec3(glm.row(glm.mat4_cast(oriQuat), 2))
+        RollRot = glm.normalize(glm.angleAxis( glm.radians(-roll), _forward))
+        oriQuat *= RollRot
+
+        self.m_orientation = oriQuat
+        
 
     def projection(self):
         return glm.perspective( glm.radians(self.m_fov), self.aspect_ratio, self.m_nearPlane, self.m_farPlane)
@@ -86,6 +106,7 @@ class GLCamera(Actor):
         self.m_farPlane = far
 
     def tick(self):
+        super().tick()
         # print(self.rotation())
         # # self.yaw(-0.5)
         # print('------ camera ------')

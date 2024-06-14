@@ -35,6 +35,25 @@ class TransformComponent(BaseComponent):
         rot = glm.normalize(glm.angleAxis( glm.radians(-angle), self.forward()))
         self._m_orientation *= rot
 
+    def setYPR(self, yaw:float, pitch:float, roll:float):
+        '''
+        指定yaw、pitch、roll特定角度下的最终朝向
+        '''
+        oriQuat = glm.fquat(1, 0, 0, 0) 
+        
+        _up = glm.vec3(glm.row(glm.mat4_cast(oriQuat), 1))
+        YawRot = glm.normalize(glm.angleAxis( glm.radians(yaw), _up))
+        oriQuat *= YawRot
+
+        _forward = -glm.vec3(glm.row(glm.mat4_cast(oriQuat), 2))
+        RollRot = glm.normalize(glm.angleAxis( glm.radians(-roll), _forward))
+        oriQuat *= RollRot
+
+        _right = glm.vec3(glm.row(glm.mat4_cast(oriQuat), 0))
+        PitchRot = glm.normalize(glm.angleAxis( glm.radians(pitch), _right ))
+        oriQuat *= PitchRot
+        
+        self._m_orientation = oriQuat
 
     # @property
     def rotation(self,):

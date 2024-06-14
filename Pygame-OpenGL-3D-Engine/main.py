@@ -18,11 +18,8 @@ if __name__ == "__main__":
     # pitch 从+x看-x，顺时针为正
     # roll 从+z看-z，顺时针为正
 
-    yaw,pitch,roll = camera.cameraleftHand2RightHand(225, -45, 0)
-    ## TODO: 目前还是增量变化,没有直接指定的接口.注意顺序
-    camera.yaw(yaw)
-    camera.pitch(pitch)
-    camera.roll(roll)
+    yaw,pitch,roll = camera.cameraleftHand2RightHand(225, -45, 30)
+    camera.setYPR(yaw, pitch, roll)
 
     engine.set_camera(camera)
 
@@ -33,10 +30,8 @@ if __name__ == "__main__":
     model2.loadModel( os.path.join(r"./assets/models/axes.fbx") )
 
     yaw,pitch,roll=model2.leftHand2RightHand(10, 20, 30)
-    ## TODO: 目前还是增量变化,没有直接指定的接口.注意顺序.
-    model2.transformComponent.yaw(yaw)
-    model2.transformComponent.roll(roll)
-    model2.transformComponent.pitch(pitch)
+    model2.transformComponent.setYPR(yaw, pitch, roll)
+    
 
     scene = Scene()
     # scene.add_model(model)
