@@ -3,7 +3,7 @@ import glm
 import os
 import numpy as np
 from source.actor import Actor
-from source.engine import Engine
+# from source.engine import Engine
 
 class GLCamera(Actor):
     '''
@@ -11,15 +11,15 @@ class GLCamera(Actor):
 
     此处相机坐标系完全按照opengl的坐标系，看向-Z，右侧 +X，上面 +Y
     '''
-    def __init__(self, app: Engine):
+    def __init__(self, app):
         super().__init__()
         self.app = app
         self.m_position = glm.vec3(0,0,0)
         self.m_orientation = glm.fquat(1, 0, 0, 0)
-        self.aspect_ratio = app.WINDOW_SIZE[0] / app.WINDOW_SIZE[1]
         self.m_fov = 45
         self.m_nearPlane = 0.1
         self.m_farPlane = 100000
+        self.aspect_ratio = self.app.window_size[0] / self.app.window_size[1]
 
     def cameraleftHand2RightHand(self, yaw,pitch,roll):
         return yaw + 90, -pitch, roll
@@ -90,6 +90,9 @@ class GLCamera(Actor):
 
         self.m_orientation = oriQuat
         
+
+    def resize(self, width, height):
+        self.aspect_ratio = width / height
 
     def projection(self):
         return glm.perspective( glm.radians(self.m_fov), self.aspect_ratio, self.m_nearPlane, self.m_farPlane)
