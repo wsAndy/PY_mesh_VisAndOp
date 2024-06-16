@@ -4,6 +4,7 @@ from source.model import GlobalAxes
 from source.model import CustomMesh
 import os
 
+from PIL import Image
 class CustomApp(Engine):
 
     rtWindowWidth = 1280
@@ -28,6 +29,21 @@ class CustomApp(Engine):
         globalAxes = GlobalAxes(self)
         self.scene.add_model(globalAxes)
 
+    def key_event(self, key, action, modifiers):
+        super().key_event(key, action, modifiers)
+
+        if key == self.wnd.keys.NUMBER_1 and action == self.wnd.keys.ACTION_PRESS:
+            # self.wnd.fbo 就把整个编辑器截图了
+            image = Image.frombytes('RGBA', self.wnd.fbo.size, self.wnd.fbo.read(components=4))
+            image = image.transpose(Image.FLIP_TOP_BOTTOM)
+            image.save('editor.png', format='png')
+            print('save image')
+        if key == self.wnd.keys.NUMBER_2 and action == self.wnd.keys.ACTION_PRESS:
+            # self.wnd.fbo 就把整个编辑器截图了
+            image = Image.frombytes('RGBA', self.fbo.size, self.fbo.read(components=4))
+            image = image.transpose(Image.FLIP_TOP_BOTTOM)
+            image.save('rt.png', format='png')
+            print('save image')
 
 
 if __name__ == "__main__":
