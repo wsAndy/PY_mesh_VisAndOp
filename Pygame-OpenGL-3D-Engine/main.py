@@ -5,9 +5,11 @@ from source.model import CustomMesh
 import os
 
 class CustomApp(Engine):
+
+    rtWindowWidth = 1280
+    rtWindowHeight = 720
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-
         self.setCamera()
         self.setMesh()
 
@@ -29,5 +31,5 @@ class CustomApp(Engine):
 
 
 if __name__ == "__main__":
-    ## 可以把 run_window_config 放到外面来，也可以不放
+    ## 对于有需要外部指定部分参数的情况，可以把 run_window_config 放到外面来，控制输入到 CustomApp的比那辆
     mglw.run_window_config(CustomApp)

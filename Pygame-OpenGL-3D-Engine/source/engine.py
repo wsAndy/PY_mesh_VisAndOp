@@ -20,14 +20,32 @@ class Engine(mglw.WindowConfig):
         imgui.create_context()
 
         self.imgui = ModernglWindowRenderer(self.wnd)
-        self.camera = GLCamera(self)
+        self.camera = GLCamera()
         self.scene = Scene()
+
+        if self.rtWindowWidth is None:
+            self.rtWindowWidth = 512
+        if self.rtWindowHeight is None:
+            self.rtWindowHeight = 512
+
+        self.fbo = self.ctx.framebuffer(
+            color_attachments=self.ctx.texture((self.rtWindowWidth, self.rtWindowHeight), 4),
+            depth_attachment=self.ctx.depth_texture((self.rtWindowWidth, self.rtWindowHeight)),
+        )
+        self.camera.resize(self.rtWindowWidth, self.rtWindowHeight)
+        # Ensure imgui knows about this texture
+        # This is the color layer in the framebuffer
+        self.imgui.register_texture(self.fbo.color_attachments[0])
 
         self.mouseLeftPress = False
         self.mouseRightPress = False
         self.qweasd = {'Q': False, 'W': False, 'E':False, 'A':False, 'S':False, 'D': False }
 
     def render(self, time: float, frametime: float):
+        # Render cube to offscreen texture / fbo
+        self.fbo.use()
+        self.fbo.clear()
+
         self.ctx.enable(moderngl.DEPTH_TEST | moderngl.CULL_FACE)
         self.ctx.clear(0 ,0, 0)
 
@@ -38,6 +56,8 @@ class Engine(mglw.WindowConfig):
         if self.scene:
             self.scene.tick()
 
+        # Render UI to screen
+        self.wnd.use()
         self.render_ui()
 
     def render_ui(self):
@@ -62,12 +82,19 @@ class Engine(mglw.WindowConfig):
         imgui.text_colored("Eggs", 0.2, 1., 0.)
         imgui.end()
 
+        # Create window with the framebuffer image
+        imgui.begin("Custom window with Image", False, imgui.WINDOW_NO_RESIZE | imgui.WINDOW_NO_TITLE_BAR | imgui.WINDOW_NO_SCROLLBAR | imgui.WINDOW_NO_SCROLL_WITH_MOUSE)
+        # Create an image control by passing in the OpenGL texture ID (glo)
+        # and pass in the image size as well.
+        # The texture needs to he registered using register_texture for this to work
+        imgui.image(self.fbo.color_attachments[0].glo, *self.fbo.size, (0, 1), (1, 0) )
+        imgui.end()
+
         imgui.render()
         self.imgui.render(imgui.get_draw_data())
 
 
     def resize(self, width: int, height: int):
-        self.camera.resize(width, height)
         self.imgui.resize(width, height)
 
     def keyControlCamera(self, frametime):

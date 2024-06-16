@@ -14,15 +14,14 @@ class GLCamera(Actor):
     # yaw,pitch,roll = camera.cameraleftHand2RightHand(225, -45, 0)
     # camera.setYPR(yaw, pitch, roll)
     '''
-    def __init__(self, app):
+    def __init__(self):
         super().__init__()
-        self.app = app
         self.m_position = glm.vec3(0,0,0)
         self.m_orientation = glm.fquat(1, 0, 0, 0)
         self.m_fov = 45
         self.m_nearPlane = 0.1
         self.m_farPlane = 100000
-        self.aspect_ratio = self.app.window_size[0] / self.app.window_size[1]
+        self.aspect_ratio = 1.0
 
     def cameraleftHand2RightHand(self, yaw,pitch,roll):
         return yaw + 90, -pitch, roll
@@ -113,8 +112,6 @@ class GLCamera(Actor):
     def setFOV(self, fov_degree: float):
         # fov: degree
         self.m_fov = fov_degree
-    # def setAspectRatio(self, ratio):
-    #     self.aspect_ratio = ratio
     def setNearFarPlanes(self, near, far):
         self.m_nearPlane = near
         self.m_farPlane = far
