@@ -1,18 +1,11 @@
-import json
-from typing import Any
-
 import moderngl_window as mglw
 import imgui
-from moderngl_window import geometry
 from moderngl_window.integrations.imgui import ModernglWindowRenderer
 
 from pathlib import Path
 import moderngl
 from .glcamera import GLCamera
 from .scene import Scene
-from .model import CustomMesh
-from .model import GlobalAxes
-import os
 
 class Engine(mglw.WindowConfig):
     gl_version = (4, 6)
@@ -20,44 +13,21 @@ class Engine(mglw.WindowConfig):
     resource_dir = (Path(__file__).parent / '../assets').resolve()
     shader_dir = (Path(__file__).parent / '../source/shaders').resolve()
 
-
     SPEED = 1000
     SENSITIVITY = 0.1
-
-    aspect_ratio = None
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         imgui.create_context()
 
         self.imgui = ModernglWindowRenderer(self.wnd)
-
         self.camera = GLCamera(self)
-        self.camera.setPosition((250, 250, 250))
-        self.camera.setFOV(45)
-        self.camera.setNearFarPlanes(0.1, 10000)
-        yaw, pitch, roll = self.camera.cameraleftHand2RightHand(225, -45, 0)
-        self.camera.setYPR(yaw, pitch, roll)
-
         self.scene = Scene()
-
-        model2 = CustomMesh(self)
-        model2.loadModel(os.path.join(self.resource_dir, r"models/axes.fbx"))
-        self.scene.add_model(model2)
-
-        globalAxes = GlobalAxes(self)
-        self.scene.add_model(globalAxes)
 
         self.mouseLeftPress = False
         self.mouseRightPress = False
         self.qweasd = {'Q': False, 'W': False, 'E':False, 'A':False, 'S':False, 'D': False }
 
-    def setCamera(self, cam):
-        self.camera = cam
-    def setScene(self, scene):
-        self.scene = scene
-
     def render(self, time: float, frametime: float):
-
         self.ctx.enable(moderngl.DEPTH_TEST | moderngl.CULL_FACE)
         self.ctx.clear(0 ,0, 0)
 

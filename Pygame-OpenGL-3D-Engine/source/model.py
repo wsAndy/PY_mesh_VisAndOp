@@ -178,10 +178,9 @@ class CustomMesh(Actor):
         # self.transformComponent.yaw(yaw)
         # self.transformComponent.roll(roll)
         # self.transformComponent.pitch(pitch)
-
-        # self.transformComponent.yaw(45)
-        # self.transformComponent.roll(-45)
-        # self.transformComponent.pitch(-45)
+        ## 可以直接使用setYPR接口
+        # # yaw,pitch,roll=model2.leftHand2RightHand(10, 20, 30)
+        # # model2.transformComponent.setYPR(yaw, pitch, roll)
 
     def leftHand2RightHand(self, yaw, pitch, roll):
         return yaw, -roll, -pitch

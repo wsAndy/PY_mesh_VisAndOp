@@ -1,15 +1,18 @@
 
 import glm
-import os
-import numpy as np
 from source.actor import Actor
-# from source.engine import Engine
 
 class GLCamera(Actor):
     '''
     copy from https://github.com/tizian/Learning-OpenGL/blob/master/src/Camera.cpp
 
     此处相机坐标系完全按照opengl的坐标系，看向-Z，右侧 +X，上面 +Y
+    # # yaw 从+y看-y，顺时针为正
+    # # pitch 从+x看-x，顺时针为正
+    # # roll 从+z看-z，顺时针为正
+    #
+    # yaw,pitch,roll = camera.cameraleftHand2RightHand(225, -45, 0)
+    # camera.setYPR(yaw, pitch, roll)
     '''
     def __init__(self, app):
         super().__init__()
