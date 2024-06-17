@@ -15,6 +15,9 @@ class Engine(mglw.WindowConfig):
 
     SPEED = 1000
     SENSITIVITY = 0.1
+
+    frameNumber = 0
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         imgui.create_context()
@@ -59,6 +62,8 @@ class Engine(mglw.WindowConfig):
         # Render UI to screen
         self.wnd.use()
         self.render_ui()
+
+        self.frameNumber += 1
 
     def render_ui(self):
         imgui.new_frame()

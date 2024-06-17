@@ -3,7 +3,8 @@ import moderngl_window as mglw
 from source.model import GlobalAxes
 from source.model import CustomMesh
 import os
-
+import argparse
+import platform
 from PIL import Image
 class CustomApp(Engine):
 
@@ -45,7 +46,33 @@ class CustomApp(Engine):
             image.save('rt.png', format='png')
             print('save image')
 
+    # def render(self, time: float, frametime: float):
+    #     '''
+    #     渲染到10帧时，保存画面并退出
+    #     '''
+    #     super().render(time, frametime)
+    #     if self.frameNumber == 10:
+    #         self.ctx.finish()
+    #         image = Image.frombytes('RGBA', self.wnd.fbo.size, self.wnd.fbo.read(components=4))
+    #         image = image.transpose(Image.FLIP_TOP_BOTTOM)
+    #         image.save('editor.png', format='png')
+    #         image = Image.frombytes('RGBA', self.fbo.size, self.fbo.read(components=4))
+    #         image = image.transpose(Image.FLIP_TOP_BOTTOM)
+    #         image.save('rt.png', format='png')
+    #         print('save image')
+    #         self.wnd.close()
+
+
+
 
 if __name__ == "__main__":
     ## 对于有需要外部指定部分参数的情况，可以把 run_window_config 放到外面来，控制输入到 CustomApp的比那辆
-    mglw.run_window_config(CustomApp)
+
+    ## 不走offscreen
+    mglw.run_window_config(config_cls=CustomApp )
+
+    # ## 走offscreen
+    # if platform.system().lower() == 'windows':
+    #     mglw.run_window_config(config_cls=CustomApp, args=("--window", "headless") )
+    # elif platform.system().lower() == 'linux':
+    #     mglw.run_window_config(config_cls=CustomApp, args=("--window", "headless", "--backend", "egl") )
