@@ -7,14 +7,25 @@ import argparse
 import platform
 import sys
 from PIL import Image
+
+from source.previewrenderer import PreviewRenderer
+from source.previewpass import PreviewPass
+
 class CustomApp(Engine):
 
     rtWindowWidth = 1280
     rtWindowHeight = 720
+
+    previewpass = PreviewPass()
+    renderer = PreviewRenderer()
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+
         self.setCamera()
         self.setMesh()
+
+        self.renderer.add_pass(self.previewpass)
+        self.updateRenderer(self.renderer)
 
     def setCamera(self):
         self.camera.setPosition((250, 250, 250))
@@ -26,10 +37,10 @@ class CustomApp(Engine):
     def setMesh(self):
         model2 = CustomMesh(self)
         model2.loadModel(os.path.join(self.resource_dir, r"models/axes.fbx"))
-        self.scene.add_model(model2)
+        self.renderer.add_model(model2)
 
         globalAxes = GlobalAxes(self)
-        self.scene.add_model(globalAxes)
+        self.renderer.add_model(globalAxes)
 
     def key_event(self, key, action, modifiers):
         super().key_event(key, action, modifiers)
@@ -47,11 +58,11 @@ class CustomApp(Engine):
             image.save('rt.png', format='png')
             print('save image')
 
-    # def render(self, time: float, frametime: float):
+    # def renderer(self, time: float, frametime: float):
     #     '''
     #     渲染到10帧时，保存画面并退出
     #     '''
-    #     super().render(time, frametime)
+    #     super().renderer(time, frametime)
     #     if self.frameNumber == 10:
     #         self.ctx.finish()
     #         image = Image.frombytes('RGBA', self.wnd.fbo.size, self.wnd.fbo.read(components=4))
@@ -76,7 +87,7 @@ if __name__ == "__main__":
         "--width",
         type=int,
         default=1920,
-        help="render width",
+        help="renderer width",
         required=False,
     )
     parser.add_argument(
@@ -84,7 +95,7 @@ if __name__ == "__main__":
         "--height",
         type=int,
         default=1080,
-        help="render height",
+        help="renderer height",
         required=False,
     )
     values = parser.parse_args(sys.argv[1:])
