@@ -6,18 +6,121 @@ UI
 '''
 import moderngl_window as mglw
 from .ui import UI
-from pathlib import Path
 import moderngl
 from .glcamera import GLCamera
 from moderngl_window.integrations.imgui import ModernglWindowRenderer
+from moderngl_window.context.base import WindowConfig
 from .resourcemanager import ResourceManager
 
 import os
 
+def create_parser():
+    parser = mglw.create_parser()
+
+    parser.add_argument(
+        "-width",
+        "--width",
+        type=int,
+        default=512,
+        help="renderer width",
+        required=False,
+    )
+    parser.add_argument(
+        "-height",
+        "--height",
+        type=int,
+        default=512,
+        help="renderer height",
+        required=False,
+    )
+
+    return parser
+
+def run_window_config(config_cls: WindowConfig, parser, timer=None, args=None, ) -> None:
+    """
+    Run an WindowConfig entering a blocking main loop
+
+    Args:
+        config_cls: The WindowConfig class to render
+    Keyword Args:
+        timer: A custom timer instance
+        args: Override sys.args
+    """
+    mglw.setup_basic_logging(config_cls.log_level)
+    # parser = mglw.create_parser()
+    config_cls.add_arguments(parser)
+    values = mglw.parse_args(args=args, parser=parser)
+    config_cls.argv = values
+    window_cls = mglw.get_local_window_cls(values.window)
+
+    # Calculate window size
+    size = values.size or config_cls.window_size
+    size = int(size[0] * values.size_mult), int(size[1] * values.size_mult)
+
+    # Resolve cursor
+    show_cursor = values.cursor
+    if show_cursor is None:
+        show_cursor = config_cls.cursor
+
+    window = window_cls(
+        title=config_cls.title,
+        size=size,
+        fullscreen=config_cls.fullscreen or values.fullscreen,
+        resizable=values.resizable
+        if values.resizable is not None
+        else config_cls.resizable,
+        visible=config_cls.visible,
+        gl_version=config_cls.gl_version,
+        aspect_ratio=config_cls.aspect_ratio,
+        vsync=values.vsync if values.vsync is not None else config_cls.vsync,
+        samples=values.samples if values.samples is not None else config_cls.samples,
+        cursor=show_cursor if show_cursor is not None else True,
+        backend=values.backend,
+    )
+    window.print_context_info()
+    mglw.activate_context(window=window)
+    timer = timer or mglw.Timer()
+    config = config_cls(ctx=window.ctx, wnd=window, timer=timer)
+    # Avoid the event assigning in the property setter for now
+    # We want the even assigning to happen in WindowConfig.__init__
+    # so users are free to assign them in their own __init__.
+    window._config = mglw.weakref.ref(config)
+
+    # Swap buffers once before staring the main loop.
+    # This can trigged additional resize events reporting
+    # a more accurate buffer size
+    window.swap_buffers()
+    window.set_default_viewport()
+
+    timer.start()
+
+    while not window.is_closing:
+        current_time, delta = timer.next_frame()
+
+        if config.clear_color is not None:
+            window.clear(*config.clear_color)
+
+        # Always bind the window framebuffer before calling render
+        window.use()
+
+        window.render(current_time, delta)
+        if not window.is_closing:
+            window.swap_buffers()
+
+    _, duration = timer.stop()
+    window.destroy()
+    if duration > 0:
+        mglw.logger.info(
+            "Duration: {0:.2f}s @ {1:.2f} FPS".format(
+                duration, window.frames / duration
+            )
+        )
+
+
 class SceneManager(mglw.WindowConfig):
     gl_version = (4, 6)
+    customInfo = {}
     title = "imgui Integration"
-    resource_dir = (Path(__file__).parent / '../assets').resolve()
 
     SPEED = 1000
     SENSITIVITY = 0.1
@@ -63,13 +166,11 @@ class SceneManager(mglw.WindowConfig):
         super().__init__(**kwargs)
         self.ui = UI(self)
 
+        self.rtWindowWidth = self.argv.width
+        self.rtWindowHeight = self.argv.height
+
         self.camera = GLCamera()
         self.resourcemanager = ResourceManager(self)
-
-        if self.rtWindowWidth is None:
-            self.rtWindowWidth = 512
-        if self.rtWindowHeight is None:
-            self.rtWindowHeight = 512
 
         self.fbo = self.ctx.framebuffer(
             color_attachments=self.ctx.texture((self.rtWindowWidth, self.rtWindowHeight), 4),
@@ -88,28 +189,16 @@ class SceneManager(mglw.WindowConfig):
         self.mouseRightPress = False
         self.qweasd = {'Q': False, 'W': False, 'E':False, 'A':False, 'S':False, 'D': False }
 
-        '''
-        TODO: 下面这一堆，需要单独剥离出来放到main外部
-        '''
-        mesh = self.resourcemanager.loadMesh( os.path.join(self.resource_dir, "models", "axes.fbx") )
-        mat = self.resourcemanager.createCustomMaterial(vertex_path = os.path.join(self.resource_dir, "shaders", "default.vert" ), fragment_path = os.path.join(self.resource_dir, "shaders", "default.frag" ) )
-        tex = self.resourcemanager.loadTexture2D( os.path.join(self.resource_dir, "textures", "uvmapping.png") )
-
-        mesh.shaderMap = {'uv': 'in_text_coord_0', 'posiiton': 'in_position'}
-        mat.textures = {0: tex}
-        mat.texturesMap = {0: "texture_0"}
-        
-        
-        mesh2 = self.resourcemanager.loadMesh( os.path.join(self.resource_dir, "models", "plane_Loc123_rot102030.fbx") )
-        mesh.setMat(mat)
-        mesh2.setMat(mat)
-
         ## 设置camera
         self.camera.setPosition((250, 250, 250))
         self.camera.setFOV(45)
         self.camera.setNearFarPlanes(0.1, 10000)
         self.camera.rotfromUE(225, -45, 0)
 
+        self.afterInit()
+
+    def afterInit(self, ):
+        pass
 
     def render(self, time: float, frametime: float):
 

@@ -11,6 +11,7 @@ import trimesh
 import numpy as np
 from core.materials import BaseMaterial
 from core.materials import CustomMaterial
+from pathlib import Path
 import glm
 from core.actor import Actor
 
@@ -185,6 +186,8 @@ class ResourceManager:
     texture2Ds: list[moderngl.Texture] = []
     textureCubes: list[moderngl.TextureCube] = []
     texture3Ds: list[moderngl.Texture3D] = []
+
+    resource_dir = (Path(__file__).parent / '../assets').resolve()
 
     def __init__(self, manager) -> None:
         self.sm = manager
