@@ -1,7 +1,8 @@
 
 
 from core.scenemanager import SceneManager, run_window_config, create_parser
-from core.resourcemanager import ResourceManager
+from core.resourcemanager import ResourceManager, DrawMode
+from core.geometry.globalaxes import GlobalAxes
 import os
 import platform
 import sys
@@ -15,6 +16,7 @@ class App(SceneManager):
         
         mat = self.resourcemanager.createCustomMaterial(vertex_path = os.path.join(ResourceManager.resource_dir, "shaders", "default.vert" ), fragment_path = os.path.join(ResourceManager.resource_dir, "shaders", "default.frag" ) )
 
+
         tex = self.resourcemanager.loadTexture2D( path=os.path.join(ResourceManager.resource_dir, "textures", "uvmapping.png") )
 
         mesh.shaderMap = {'uv': 'in_text_coord_0', 'posiiton': 'in_position'}
@@ -25,7 +27,9 @@ class App(SceneManager):
         mesh.setMat(mat)
         mesh2.setMat(mat)
 
+        GlobalAxes(self)
 
+        
 
 if __name__ == "__main__":
 

@@ -1,11 +1,18 @@
 
+from core.resourcemanager import ResourceManager
 import imgui
+import os
 
 class UI:
 
     def __init__(self, manager) -> None:
         imgui.create_context()
         self.sm = manager
+
+        io = imgui.get_io()
+        io.fonts.add_font_from_file_ttf(
+            os.path.join(ResourceManager.resource_dir, "fonts", "Roboto", "Roboto-Medium.ttf"), 18
+        )
 
     def render_ui(self):
         imgui.new_frame()

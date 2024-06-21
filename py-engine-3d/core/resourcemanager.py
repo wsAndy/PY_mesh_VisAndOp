@@ -43,6 +43,11 @@ class ModelLoader():
         res = self.load(path)
         return trimesh.Trimesh(vertices=res["vertices"], faces=res["faces"] )
 
+from enum import Enum
+class DrawMode(Enum):
+    POINT = 1
+    LINES = 2
+    TRIANGLE = 3
 
 class Mesh(Actor):
     _mat = None
@@ -51,15 +56,31 @@ class Mesh(Actor):
     _uv = None
     _isChanged = False
 
+    # 绘制类型
+    _drawmode: DrawMode = DrawMode.TRIANGLE
+
+    # 
+    basecolor = None
+
     # initialize
     _pos_vbo = None
     _coords_vbo = None
+
     _vao = None
     _ibo = None
 
     # 映射shader需要的uv、position
     shaderMap = {'uv': 'in_text_coord_0', 'posiiton': 'in_position'}
 
+    @property
+    def drawmode(self) -> DrawMode:
+        """str: Name of the _drawmode"""
+        return self._drawmode
+
+    @drawmode.setter
+    def drawmode(self, value: DrawMode):
+        self._drawmode = value
+        
     def __init__(self, ctx, vertices=None, faces = None, uv = None, mat = None):
         super().__init__()
         self.ctx = ctx
@@ -133,18 +154,31 @@ class Mesh(Actor):
         self._coords_vbo = self.ctx.buffer( uv.astype('f4').tobytes() )
         self._isChanged = True
 
+
     def _updateVAO(self,):
         if self._vao is not None:
             self._vao.release()
-        if self._mat.isReady() and self._coords_vbo and self._pos_vbo and self._ibo:
+        if self._mat.isReady():
+            # 根据状态传入content
+            _content = []
+            if self._coords_vbo:
+                _name = self.shaderMap['uv'] if 'uv' in self.shaderMap else 'in_text_coord_0'
+                if _name in self._mat.shader_program:
+                    _content.append(
+                        (self._coords_vbo, '2f', _name)
+                    )
+            if self._pos_vbo:
+                _name = self.shaderMap['position'] if 'position' in self.shaderMap else 'in_position'
+                
+                if _name in self._mat.shader_program:
+                    _content.append(
+                        (self._pos_vbo, '3f',  _name)
+                    )
             self._vao = self.ctx.vertex_array(
                 program = self._mat.shader_program,
-                content= [
-                    (self._coords_vbo, '2f', self.shaderMap['uv'] if 'uv' in self.shaderMap else 'in_text_coord_0' ),
-                    (self._pos_vbo, '3f', self.shaderMap['position'] if 'position' in self.shaderMap else 'in_position' ),
-                ],
+                content = _content,
                 index_buffer = self._ibo
-            ) 
+            )
         else:
             self._vao = None
 
@@ -164,18 +198,18 @@ class Mesh(Actor):
         translation = glm.translate(self.transformComponent.location)
         model_matrix = translation * rotation * scale
 
-        # 此时保证self._mat.shader_program有值
-        self._mat.shader_program['model_matrix'].write(model_matrix)
-        # 贴图分配
-        for texId in self._mat.textures:
-            _tex = self._mat.textures[texId]
-            _shaderTexName = self._mat.texturesMap[texId]
-            _tex.use(location= texId)
-            self._mat.shader_program[_shaderTexName] = texId
-            
-        self._vao.render()
+        # 更新材质属性
+        self._mat.updateModelMatrix(model_matrix)
+        self._mat.updateTexture()
+        self._mat.updateBaseColor( self.basecolor )
         
+        if self._drawmode == DrawMode.LINES:
+            self._vao.render(mode=moderngl.LINES)
 
+        elif self._drawmode == DrawMode.POINT:
+            self._vao.render(mode=moderngl.POINTS)
+        elif self._drawmode == DrawMode.TRIANGLE:
+            self._vao.render(mode=moderngl.TRIANGLES)
     
 
 class ResourceManager:
@@ -216,20 +250,30 @@ class ResourceManager:
         self.changed = True
         return tmp
     
-    def createCustomMaterial(self, vertex_path: str, fragment_path: str):
+    def createLine(self, startpoint, endpoint, ):
+        vertices = np.array([ startpoint, endpoint ], dtype='f4')
+        indices = np.array([0, 1], dtype='i4')
+        tmp = Mesh(ctx = self.sm.ctx, vertices=vertices, faces=indices)
+        self.meshes.append(tmp)
+        self.changed = True
+        return tmp
+    
+    def createCustomMaterial(self, glslpath = None, vertex_path = None, 
+        geometry_path=None, fragment_path = None):
         '''
         创建自定义材质
         '''
-        sp = self.loadProgram(vertex_path, fragment_path)
+        sp = self.loadProgram(glslpath = glslpath, vertex_path= vertex_path, fragment_path=fragment_path, geometry_path= geometry_path)
         tmp = CustomMaterial(sp)
         self.materials.append(tmp)
         return tmp
 
-    def loadProgram(self, vertex_path: str, fragment_path: str):
+    def loadProgram(self, glslpath = None, vertex_path = None, 
+        geometry_path=None, fragment_path = None):
         '''
         加载shader
         '''
-        tmp = self.sm.load_program(vertex_shader=vertex_path, fragment_shader=fragment_path)
+        tmp = self.sm.load_program(path = glslpath, geometry_shader = geometry_path, vertex_shader=vertex_path, fragment_shader=fragment_path)
         self.shaders.append(tmp)
         return tmp
     
