@@ -120,7 +120,7 @@ class Mesh(Actor):
         super().tick()
         self._render()
 
-        self.isChanged = False
+        self._isChanged = False
 
     def getMatId(self,):
         if self._mat is not None:
@@ -130,8 +130,12 @@ class Mesh(Actor):
     def getMat(self,):
         return self._mat
     def setMat(self, mat):
-        self._mat = mat
-        self._isChanged = True
+        if self._mat != mat:
+            if self._vao is not None:
+                self._vao.release()
+            self._vao = None
+            self._mat = mat
+            self._isChanged = True
 
     def setVertices(self, v):
         self._vertices = v
@@ -205,7 +209,6 @@ class Mesh(Actor):
         
         if self._drawmode == DrawMode.LINES:
             self._vao.render(mode=moderngl.LINES)
-
         elif self._drawmode == DrawMode.POINT:
             self._vao.render(mode=moderngl.POINTS)
         elif self._drawmode == DrawMode.TRIANGLE:

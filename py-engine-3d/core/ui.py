@@ -5,6 +5,9 @@ import os
 
 class UI:
 
+    def customLogic(self):
+        pass
+
     def __init__(self, manager) -> None:
         imgui.create_context()
         self.sm = manager
@@ -35,6 +38,10 @@ class UI:
         imgui.text("Bar")
         imgui.text_colored("Eggs", 0.2, 1., 0.)
         imgui.end()
+
+
+        ## 外部自定义的函数执行内容
+        self.customLogic()
 
         # Create window with the framebuffer image
         imgui.begin("Custom window with Image", False, imgui.WINDOW_NO_RESIZE | imgui.WINDOW_NO_TITLE_BAR | imgui.WINDOW_NO_SCROLLBAR | imgui.WINDOW_NO_SCROLL_WITH_MOUSE)

@@ -8,6 +8,8 @@ from .components.baseComponent import BaseComponent
 from .components.transformComp import TransformComponent
 
 class Actor:
+    # 这个actor的命名
+    label = ""
     transformComponent: TransformComponent
     def __init__(self) -> None:
         self.transformComponent = TransformComponent()

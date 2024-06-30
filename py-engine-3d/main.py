@@ -1,11 +1,36 @@
 
 
 from core.scenemanager import SceneManager, run_window_config, create_parser
-from core.resourcemanager import ResourceManager, DrawMode
+from core.resourcemanager import ResourceManager
 from core.geometry.globalaxes import GlobalAxes
 import os
 import platform
 import sys
+from core.ui import UI
+
+import imgui
+class CustomUI(UI):
+    '''
+    自定义ui 执行逻辑
+    '''
+    def __init__(self, manager):
+        super().__init__(manager)
+    def customLogic(self):
+        import random
+        #### button example
+        with imgui.begin("Example: Change Material"):
+            btn_mat = imgui.button('Mat1')
+            with imgui.begin_drag_drop_source() as drag_drop_src:
+                if drag_drop_src.dragging:
+                    imgui.set_drag_drop_payload('itemtype', b'payload')
+                    imgui.button('dragged source')
+            if btn_mat:
+                # 如果是编辑器，就需要做选中状态判断
+                # 这边简单一些，直接把指定名字的模型的材质改掉, 在目前所有材质中随便取一个
+                matIdList = [ x for x in range(len(self.sm.resourcemanager.materials)) ]
+                for mesh in self.sm.resourcemanager.meshes:
+                    if mesh.label == "big1":
+                        mesh.setMat( self.sm.resourcemanager.materials[ random.choice(matIdList)] )
 
 
 class App(SceneManager):
@@ -13,7 +38,7 @@ class App(SceneManager):
         super().__init__(**kwargs)
             
         mesh = self.resourcemanager.loadMesh( path=os.path.join( ResourceManager.resource_dir, "models", "axes.fbx") )
-
+        mesh.label = "big1"
         # for mat1:  default
         mesh.shaderMap = {'uv': 'in_text_coord_0', 'posiiton': 'in_position'}
         
@@ -38,8 +63,11 @@ class App(SceneManager):
         mesh.setMat(mat2)
         mesh2.setMat(mat)
 
+        # 绘制坐标轴
         GlobalAxes(self)
 
+        ## 自定义ui
+        self.ui = CustomUI(self)
         
 
 if __name__ == "__main__":
