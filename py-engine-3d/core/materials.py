@@ -15,7 +15,7 @@ class BaseMaterial:
         """moderngl.Context: The current context"""
         return moderngl_window.ctx()
     
-    def setBaseColor(self, color):
+    def setBaseColor(self, color: list[3]):
         if len(color) == 3:
             self._basecolor = np.array(color).astype('f4').tobytes()
 

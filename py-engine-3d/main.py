@@ -13,18 +13,29 @@ class App(SceneManager):
         super().__init__(**kwargs)
             
         mesh = self.resourcemanager.loadMesh( path=os.path.join( ResourceManager.resource_dir, "models", "axes.fbx") )
+
+        # for mat1:  default
+        mesh.shaderMap = {'uv': 'in_text_coord_0', 'posiiton': 'in_position'}
         
+        ###################
         mat = self.resourcemanager.createCustomMaterial(vertex_path = os.path.join(ResourceManager.resource_dir, "shaders", "default.vert" ), fragment_path = os.path.join(ResourceManager.resource_dir, "shaders", "default.frag" ) )
 
-
         tex = self.resourcemanager.loadTexture2D( path=os.path.join(ResourceManager.resource_dir, "textures", "uvmapping.png") )
-
-        mesh.shaderMap = {'uv': 'in_text_coord_0', 'posiiton': 'in_position'}
+        ## mat中有texture的情况，需要指定使用哪个location对应哪个texture数据，以及location在glsl中对应哪个变量
         mat.textures = {0: tex}
         mat.texturesMap = {0: "texture_0"}
+        #################################
+
+        ## 指定material为 basecolor
+        mat2 = self.resourcemanager.createCustomMaterial(glslpath=os.path.join(ResourceManager.resource_dir, "shaders", "basecolor.glsl" ))
+        # 对于basecolor的情况，需要指定basecolor
+        mat2.setBaseColor([0.1, 0.5, 1])
+        
         
         mesh2 = self.resourcemanager.loadMesh( os.path.join(ResourceManager.resource_dir, "models", "plane_Loc123_rot102030.fbx") )
-        mesh.setMat(mat)
+
+        ## 分别指定不同的材质
+        mesh.setMat(mat2)
         mesh2.setMat(mat)
 
         GlobalAxes(self)
