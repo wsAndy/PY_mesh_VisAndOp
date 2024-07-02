@@ -5,14 +5,22 @@ tick
 UI
 '''
 import moderngl_window as mglw
+
+
 from .ui import UI
 import moderngl
 from .glcamera import GLCamera
 from moderngl_window.integrations.imgui import ModernglWindowRenderer
 from moderngl_window.context.base import WindowConfig
+from moderngl_window import geometry
 from .resourcemanager import ResourceManager
 
-import os
+from .forwardrender import ForwardRender
+from .deferredrender import DeferredRender
+from enum import Enum
+class ERenderingMode(Enum):
+    Forward = 1
+    Deferred = 2
 
 def create_parser():
     parser = mglw.create_parser()
@@ -129,39 +137,6 @@ class SceneManager(mglw.WindowConfig):
     rtWindowWidth = 512
     rtWindowHeight = 512
 
-
-    # 当前次渲染队列
-    renderLists = {} # key: material.id, values: list[Mesh] 
-    renderListsMat = {} # key: material.id, values: material
-
-    # 渲染前做资源分配
-    def beforeRender(self,):
-        '''
-        检查下，如果 renderLists没有变化，则不需要重新装配
-        否则，需要装配
-        '''
-        if self.resourcemanager.isChanged():
-            self.renderLists = {}
-            self.renderListsMat = {}
-            '''
-            重新做装配
-            '''
-            for mesh in self.resourcemanager.meshes:
-                # 根据材质id做分配
-                matId = mesh.getMatId()
-                if matId in self.renderLists:
-                    self.renderLists[matId].append(mesh)
-                else:
-                    self.renderLists[matId] = [mesh]
-                # 根据材质id做分配
-                if matId not in self.renderListsMat:
-                    self.renderListsMat[matId] = mesh.getMat()
-            pass
-        pass
-
-    def afterRender(self,):
-        self.resourcemanager.changed = False
-
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.ui = UI(self)
@@ -178,7 +153,6 @@ class SceneManager(mglw.WindowConfig):
         )
         self.camera.resize(self.rtWindowWidth, self.rtWindowHeight)
 
-        
         self.imgui = ModernglWindowRenderer(self.wnd)
 
         # Ensure imgui knows about this texture
@@ -198,12 +172,22 @@ class SceneManager(mglw.WindowConfig):
         self.afterInit()
 
     def afterInit(self, ):
-        pass
+        '''
+        默认走forward管线
+        '''
+        self.changeRenderMode(ERenderingMode.Forward)
+
+    def changeRenderMode(self, mode: ERenderingMode):
+        self.renderMode = mode
+        if mode is ERenderingMode.Forward:
+            self.renderer = ForwardRender(self)
+        elif mode is ERenderingMode.Deferred:
+            self.renderer = DeferredRender(self)
 
     def render(self, time: float, frametime: float):
 
         self.frameNumber += 1
-        self.beforeRender()
+        self.renderer.beforeRender()
 
         # Render cube to offscreen texture / fbo
         self.fbo.use()
@@ -216,29 +200,13 @@ class SceneManager(mglw.WindowConfig):
             self.camera.tick()
             self.keyControlCamera(frametime)
 
-        # 待渲染队列需要渲染
-        for meshesInOneMatKey in self.renderLists:
-            '''
-            相同材质
-            '''
-            # TODO: 配置材质属性、包括镜头信息
-            mat = self.renderListsMat[meshesInOneMatKey]
-            mat.shader_program['view_matrix'].write(
-                self.camera.view_matrix()
-            )
-            mat.shader_program['projection_matrix'].write(
-                self.camera.projection_matrix()
-            )
-            # 分配每一个mesh的材质属性
-            meshesInOneMat = self.renderLists[meshesInOneMatKey]
-            for mesh in meshesInOneMat:
-                mesh.tick()
+        self.renderer.render()
 
         # Render UI to screen
         self.wnd.use()
         self.ui.render_ui()
 
-        self.afterRender()
+        self.renderer.afterRender()
 
 
     def resize(self, width: int, height: int):
